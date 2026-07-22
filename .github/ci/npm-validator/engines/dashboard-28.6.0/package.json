@@ -1,0 +1,14 @@
+{
+  "name": "@splunk-dashboard-studio-python/engine-28.6.0",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "dependencies": {
+    "@splunk/dashboard-definition": "28.6.0",
+    "@splunk/dashboard-presets": "28.6.0",
+    "@splunk/dashboard-validation": "28.6.0",
+    "@splunk/visualization-encoding": "27.5.0",
+    "jsdom": "26.1.0"
+  }
+}

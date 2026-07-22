@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python 3.14 native tooling
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-groups
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy splunk_dashboard_studio
+
+      - name: Test with branch coverage
+        run: uv run pytest --cov=splunk_dashboard_studio --cov-report=term-missing -q
+
+      - name: Verify native compatibility corpus
+        run: uv run python scripts/check_corpus.py
+
+      - name: Build Python distributions
+        run: uv build
+
+      - name: Prove distributions contain no Node assets
+        run: uv run python scripts/check_distribution.py dist
+
+  official-engine:
+    name: Splunk NPM engine ${{ matrix.engine }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: dashboard-27.5.1
+            targets: "9.4.3"
+          - engine: dashboard-28.6.0
+            targets: "10.0.0 10.2.0"
+          - engine: dashboard-29.8.0
+            targets: "10.4.0"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+
+      - name: Install Python runtime dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Set up Node 24 for CI only
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: >-
+            .github/ci/npm-validator/engines/${{ matrix.engine }}/package-lock.json
+
+      - name: Install exact Splunk NPM engine lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_path=".github/ci/npm-validator/engines/${{ matrix.engine }}"
+          npm ci --prefix "${engine_path}" --ignore-scripts --no-audit --no-fund
+
+      - name: Validate generated corpus with official libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_path=".github/ci/npm-validator/engines/${{ matrix.engine }}"
+          for target in ${{ matrix.targets }}; do
+            corpus_path="${RUNNER_TEMP}/corpus-${target}.jsonl"
+            uv run --frozen --no-dev splunk-studio corpus \
+              --target "${target}" \
+              --output "${corpus_path}"
+            uv run --frozen --no-dev python .github/ci/npm-validator/run.py \
+              --engine-dir "${engine_path}" \
+              --corpus "${corpus_path}"
+          done
