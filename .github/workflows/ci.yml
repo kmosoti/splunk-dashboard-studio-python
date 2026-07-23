@@ -14,18 +14,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  python:
-    name: Python 3.14 native tooling
+  quality:
+    name: Quality and distributions (Python 3.12)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Python 3.14
+      - name: Set up Python 3.12
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
-          python-version: "3.14"
+          python-version: "3.12"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
@@ -45,17 +45,74 @@ jobs:
       - name: Type check
         run: uv run mypy splunk_dashboard_studio
 
-      - name: Test with branch coverage
-        run: uv run pytest --cov=splunk_dashboard_studio --cov-report=term-missing -q
+      - name: Verify official-engine locks match profiles
+        run: uv run python scripts/check_engine_locks.py
 
-      - name: Verify native compatibility corpus
-        run: uv run python scripts/check_corpus.py
+      - name: Verify release version sources
+        run: uv run python scripts/release_evidence.py --tag v0.2.0 --check-version-only
 
       - name: Build Python distributions
         run: uv build
 
       - name: Prove distributions contain no Node assets
         run: uv run python scripts/check_distribution.py dist
+
+  python-compatibility:
+    name: Python ${{ matrix.python-version }} compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-groups
+
+      - name: Test with branch coverage
+        run: uv run pytest --cov=splunk_dashboard_studio --cov-report=term-missing -q
+
+  examples-snapshots:
+    name: Catalog artifacts and native corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-groups
+
+      - name: Verify checked catalog artifacts
+        run: uv run python scripts/check_examples.py --check
+
+      - name: Generate every target variant and verify native expectations
+        run: uv run python scripts/check_corpus.py
 
   official-engine:
     name: Splunk NPM engine ${{ matrix.engine }}
@@ -75,10 +132,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Python 3.14
+      - name: Set up Python 3.12
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
-          python-version: "3.14"
+          python-version: "3.12"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7

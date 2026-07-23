@@ -55,6 +55,11 @@ class InputDefinition(ExtensibleModel):
     type: str = Field(min_length=1)
     options: dict[str, JsonValue] = Field(default_factory=dict)
     data_sources: dict[str, str] = Field(default_factory=dict, alias="dataSources")
+    context: dict[str, JsonValue] = Field(default_factory=dict)
+    container_options: dict[str, JsonValue] | None = Field(
+        default=None,
+        alias="containerOptions",
+    )
     title: str | None = None
 
 

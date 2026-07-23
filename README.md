@@ -1,127 +1,140 @@
 # splunk-dashboard-studio-python
 
-Generate and validate deterministic Splunk Enterprise Dashboard Studio definitions with Python
-3.14 and Pydantic 2.
+Build and validate deterministic Splunk Enterprise Dashboard Studio definitions with Python 3.12+
+and Pydantic 2.
 
 ```python
 from splunk_dashboard_studio import DashboardBuilder, canonical_json
 
 builder = DashboardBuilder(title="Service health", target="9.4.3")
 search = builder.add_search(
-    "index=_internal | stats count by sourcetype",
-    name="events",
+    "index=otel_traces service.name=checkout | stats perc95(duration_ms) AS p95_ms",
+    name="latency",
 )
 builder.add_visualization(
-    "splunk.table",
-    name="events",
+    "splunk.singlevalue",
+    name="p95 latency",
     data_sources={"primary": search},
-    options={},
+    title="p95 latency",
 )
 
-dashboard = builder.build()
-print(canonical_json(dashboard, indent=2))
+print(canonical_json(builder.build(), indent=2))
 ```
 
-The package is intentionally Splunk Enterprise-only. It does not claim Splunk Cloud
-compatibility, does not connect to a Splunk deployment, and never installs or bundles Node.
+Version 0.2.0 is an unreleased release candidate. The package is intentionally Splunk
+Enterprise-only. It does not claim Splunk Cloud compatibility, connect to a deployment, create
+saved searches, publish dashboards, or install Node at runtime.
 
-## What it validates
+## Included in v0.2
 
-- Pydantic 2 dashboard envelopes with stable JSON aliases.
-- Explicit Splunk Enterprise targets beginning at 9.4.3.
-- Feature availability across the 9.4, 10.0, 10.2, and 10.4 release lines.
-- Data-source and visualization references.
-- Base/chain parent existence, cycles, depth, fan-out, and inherited options.
-- Canvas positions and boundary overflow.
-- Structural SPL1 pipelines and Dynamic Options Syntax expressions.
-- Deterministic search optimization proposals without silently rewriting SPL.
+- Exact target profiles for the actively supported 9.4, 10.0, 10.2, and 10.4 release lines.
+- Deterministic builders for searches, saved-search references, chains, defaults, tokens, inputs,
+  visualizations, tabbed absolute layouts, application properties, and expressions.
+- Native validation for references, feature boundaries, SPL1 structure, Dynamic Options Syntax,
+  canvas bounds, and search-chain depth, fan-out, cycles, and inherited options.
+- A typed `portable-observability-v1` telemetry contract, per-panel provenance, saved-search
+  proposals, evidence manifests, and an eight-skill agent taxonomy.
+- Ten packaged observability dashboards with checked definitions and manifests.
+- An offline codec for documented `data/ui/views` XML, including safe CDATA encoding, normalized
+  SHA-256 comparison, and deterministic JSON-pointer diffs.
+- Locked Splunk-owned NPM validation engines in CI without redistributing them in Python artifacts.
 
-The native validator is deliberately stricter about cross-object relationships than the official
-Dashboard Framework schema. CI adds a second validation lane using pinned Splunk NPM engines.
-
-## Install for development
+## Development install
 
 ```console
 uv sync --all-groups
 uv run pytest -q
 ```
 
-The project requires Python 3.14 or later. Pydantic's compiled `pydantic-core` performs the hot-path
-model parsing and serialization.
+The native compatibility matrix covers Python 3.12, 3.13, and 3.14. Pydantic's compiled
+`pydantic-core` handles model parsing and serialization.
+
+## Catalog
+
+List the included dashboards and their telemetry requirements:
+
+```console
+uv run splunk-studio catalog list
+```
+
+Build a canonical definition or a definition-plus-evidence bundle:
+
+```console
+uv run splunk-studio catalog build kubernetes_workload_health \
+  --target 9.4.3 --output dashboard.json
+
+uv run splunk-studio catalog build business_journey_slo \
+  --target 10.2.0 --artifact bundle --output bundle.json
+```
+
+The catalog uses logical indexes such as `otel_metrics`, `otel_logs`, `otel_traces`, and
+`platform_events`. Deployers map those names and the documented semantic fields to local data.
+The package deliberately ships no sample telemetry or hidden index assumptions.
+
+See [the example catalog](docs/example-catalog.md) and the checked files under
+[`examples/catalog/`](examples/catalog/).
 
 ## CLI
 
-Validate a dashboard for an exact Enterprise target:
-
 ```console
-uv run splunk-studio validate dashboard.json --target 9.4.3
-```
+# Validate a definition for an exact Enterprise target.
+uv run splunk-studio validate dashboard.json --target 10.2.0
 
-Read from standard input:
+# Read a definition from standard input.
+uv run splunk-studio validate - --target 9.4.3 < dashboard.json
 
-```console
-uv run splunk-studio validate - --target 10.2.0 < dashboard.json
-```
-
-Emit the complete agent contract, including the Enterprise capability manifest:
-
-```console
+# Emit one schema or the complete machine-facing schema bundle.
 uv run splunk-studio schema agent > agent-schema.json
-```
+uv run splunk-studio schema bundle > schema-bundle.json
 
-Generate the deterministic compatibility corpus used by CI:
+# Generate the native and official-engine compatibility corpus.
+uv run splunk-studio corpus --target 10.4.0 --output corpus.jsonl
 
-```console
-uv run splunk-studio corpus --target 10.2.0 --output corpus.jsonl
-```
-
-Analyze existing searches for possible base/chain consolidation:
-
-```console
+# Propose safe base/chain consolidation without rewriting SPL.
 uv run splunk-studio optimize dashboard.json
 ```
 
-All commands produce machine-readable JSON or JSONL. Exit codes are `0` for success, `1` for a
-validly executed check that found an invalid dashboard, and `2` for an invocation or system error.
+Commands emit machine-readable JSON or JSONL. Exit code `0` means success, `1` means a completed
+validation found an invalid dashboard, and `2` means an invocation, target, input, or system error.
 
-## Version evidence
+## Offline view codec
 
-Splunk Enterprise versions and public NPM package versions are separate version axes. Each profile
-records an evidence grade:
+```python
+from splunk_dashboard_studio import StudioView, compare_roundtrip, encode_view_xml
 
-- `official_attribution`: Splunk's Enterprise attribution identifies the Dashboard Framework line.
-- `verified_installation`: package metadata was captured from the matching licensed Enterprise
-  installation.
-- `temporal_surrogate`: the closest applicable public package is used for differential CI, but is
-  not presented as an official product mapping.
+view = StudioView(label="Service health", definition=builder.build(), theme="dark")
+xml = encode_view_xml(view)
+comparison = compare_roundtrip(view, xml)
+assert comparison.equivalent
+```
 
-The 9.4.3 lane uses `@splunk/dashboard-validation@27.5.1` as a temporal surrogate because it is the
-last public release before Enterprise 9.4 GA. The repository explicitly rejects the inaccurate
-`24.0.0` mapping: that version does not exist for the public validation package. Enterprise 10.2
-uses the officially evidenced Dashboard Framework 28.6 line.
+The codec implements the documented storage envelope only. It performs no HTTP requests and has
+not yet been verified against a disposable live Splunk publish/readback fixture. Treat it as an
+offline serialization and drift-analysis tool, not deployment automation.
 
-See [compatibility.md](docs/compatibility.md) for the complete policy.
+## Validation authority
 
-## Official NPM validation in CI
+The native validator and official CI engines have different jobs:
 
-Node is development infrastructure, not a runtime dependency. GitHub Actions:
+- Python owns product-version policy and cross-object semantics.
+- Locked Splunk NPM schemas own exact Splunk option shapes and the official DOS parser.
+- Release evidence is valid only when every required lane agrees with its declared expectation.
 
-1. Generates a deterministic positive and negative dashboard corpus in Python.
-2. Installs an exact, locked NPM engine in an ephemeral runner.
-3. Generates the Enterprise Dashboard Studio schema from the matching presets.
-4. Runs `DashboardValidator` plus Splunk's DOS parser.
-5. Compares actual results with the corpus expectations.
-6. Inspects the Python wheel and source distribution to prove that no Node or NPM assets ship.
+Node remains CI-only. Build inspection rejects JavaScript, NPM manifests, and `node_modules` from
+both wheel and source-distribution artifacts. See [architecture](docs/architecture.md) and
+[compatibility policy](docs/compatibility.md).
 
-The CI harness lives under `.github/ci/npm-validator/` and is explicitly excluded from Python build
-artifacts. Splunk NPM packages are downloaded during CI and are never redistributed by this project.
+## Security and status
 
-## Project status
+Dashboard JSON is presentation state and executable search workload. Review indexes, tokens,
+saved-search ACLs, refresh behavior, and publication permissions before deployment. The package
+does not enforce organization-specific sensitivity or ACL policy; the operational checklist is in
+[operational security](docs/operational-security.md).
 
-This is an independent open-source project and is not affiliated with, endorsed by, or supported by
-Splunk Inc. “Splunk” and related marks are the property of their respective owners.
+This is an independent open-source project and is not affiliated with, endorsed by, or supported
+by Splunk Inc. “Splunk” and related marks are the property of their respective owners.
 
 ## License
 
-Apache-2.0. The license applies to this project's source code, not to separately downloaded Splunk
+Apache-2.0. The license covers this project's source code, not separately downloaded Splunk
 packages or Splunk software.

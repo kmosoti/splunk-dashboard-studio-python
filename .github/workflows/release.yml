@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  official-engine:
+    name: Release validator ${{ matrix.engine }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: dashboard-27.5.1
+            targets: "9.4.3"
+          - engine: dashboard-28.6.0
+            targets: "10.0.0 10.2.0"
+          - engine: dashboard-29.8.0
+            targets: "10.4.0"
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+          save-cache: false
+
+      - name: Install Python runtime dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Set up Node 24 for CI only
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: >-
+            .github/ci/npm-validator/engines/${{ matrix.engine }}/package-lock.json
+
+      - name: Install exact Splunk NPM engine lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_path=".github/ci/npm-validator/engines/${{ matrix.engine }}"
+          npm ci --prefix "${engine_path}" --ignore-scripts --no-audit --no-fund
+
+      - name: Validate release corpus with official libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_path=".github/ci/npm-validator/engines/${{ matrix.engine }}"
+          for target in ${{ matrix.targets }}; do
+            corpus_path="${RUNNER_TEMP}/corpus-${target}.jsonl"
+            uv run --frozen --no-dev splunk-studio corpus \
+              --target "${target}" \
+              --output "${corpus_path}"
+            uv run --frozen --no-dev python .github/ci/npm-validator/run.py \
+              --engine-dir "${engine_path}" \
+              --corpus "${corpus_path}"
+          done
+
+  build:
+    name: Build and attest once
+    needs: official-engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-groups
+
+      - name: Verify tag and version agreement
+        run: >-
+          uv run python scripts/release_evidence.py
+          --tag "${{ github.event.release.tag_name }}"
+          --check-version-only
+
+      - name: Run native release gates
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy splunk_dashboard_studio
+          uv run pytest --cov=splunk_dashboard_studio --cov-report=term-missing -q
+          uv run python scripts/check_engine_locks.py
+          uv run python scripts/check_examples.py --check
+          uv run python scripts/check_corpus.py
+
+      - name: Build distributions once
+        run: uv build
+
+      - name: Inspect distribution boundary
+        run: uv run python scripts/check_distribution.py dist
+
+      - name: Create checksums and release evidence
+        run: >-
+          uv run python scripts/release_evidence.py
+          --tag "${{ github.event.release.tag_name }}"
+          --dist dist
+          --output release/release-evidence.json
+          --checksums-output release/SHA256SUMS
+
+      - name: Attest Python distributions
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: "dist/*"
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: python-release-bundle
+          path: |
+            dist/*
+            release/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-pypi:
+    name: Publish to PyPI with OIDC
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/p/splunk-dashboard-studio-python
+    permissions:
+      id-token: write
+    steps:
+      - name: Download release bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: python-release-bundle
+
+      - name: Publish distributions
+        uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
+        with:
+          packages-dir: dist/
+
+  attach-release-assets:
+    name: Attach distributions and evidence
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download release bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: python-release-bundle
+
+      - name: Attach release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh release upload "${{ github.event.release.tag_name }}"
+          dist/* release/* --clobber

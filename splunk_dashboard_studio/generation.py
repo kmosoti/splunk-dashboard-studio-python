@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
-from collections.abc import Mapping
-from typing import Any
+from collections.abc import Mapping, Sequence
+from typing import Any, cast
 
 from pydantic import JsonValue
 
@@ -75,6 +75,9 @@ class DashboardBuilder:
         self._positions: dict[str, Position] = {}
         self._application_properties: dict[str, JsonValue] = {}
         self._expressions: dict[str, JsonValue] = {}
+        self._data_source_defaults: dict[str, dict[str, JsonValue]] = {}
+        self._visualization_defaults: dict[str, dict[str, JsonValue]] = {}
+        self._token_defaults: dict[str, dict[str, JsonValue]] = {}
 
     def _identifier(self, prefix: str, label: str, explicit: str | None) -> str:
         if explicit:
@@ -161,13 +164,28 @@ class DashboardBuilder:
         visualization_id: str | None = None,
         position: Position | Mapping[str, int] | None = None,
         title: str | None = None,
+        description: str | None = None,
+        context: Mapping[str, JsonValue] | None = None,
+        event_handlers: Sequence[Mapping[str, JsonValue]] | Mapping[str, JsonValue] | None = None,
+        container_options: Mapping[str, JsonValue] | None = None,
     ) -> str:
         identifier = self._identifier("viz", name, visualization_id)
+        normalized_handlers: list[dict[str, JsonValue]] | dict[str, JsonValue] | None
+        if event_handlers is None:
+            normalized_handlers = None
+        elif isinstance(event_handlers, Mapping):
+            normalized_handlers = dict(event_handlers)
+        else:
+            normalized_handlers = [dict(handler) for handler in event_handlers]
         self._visualizations[identifier] = Visualization(
             type=visualization_type,
             data_sources=dict(data_sources or {}),
             options=dict(options or {}),
+            context=dict(context or {}),
+            event_handlers=normalized_handlers,
+            container_options=(dict(container_options) if container_options is not None else None),
             title=title,
+            description=description,
         )
         if position is not None:
             self._positions[identifier] = (
@@ -181,11 +199,70 @@ class DashboardBuilder:
         *,
         name: str,
         options: Mapping[str, JsonValue] | None = None,
+        data_sources: Mapping[str, str] | None = None,
         input_id: str | None = None,
+        title: str | None = None,
+        context: Mapping[str, JsonValue] | None = None,
+        container_options: Mapping[str, JsonValue] | None = None,
     ) -> str:
         identifier = self._identifier("input", name, input_id)
-        self._inputs[identifier] = InputDefinition(type=input_type, options=dict(options or {}))
+        self._inputs[identifier] = InputDefinition(
+            type=input_type,
+            options=dict(options or {}),
+            data_sources=dict(data_sources or {}),
+            title=title,
+            context=dict(context or {}),
+            container_options=(dict(container_options) if container_options is not None else None),
+        )
         return identifier
+
+    @staticmethod
+    def _require_default_name(kind: str, value: str) -> None:
+        if not value.strip():
+            raise DashboardGenerationError(f"{kind} must be non-empty")
+
+    def set_data_source_defaults(
+        self,
+        scope: str,
+        values: Mapping[str, JsonValue],
+    ) -> DashboardBuilder:
+        """Set one global or data-source-type default without overwriting prior intent."""
+
+        self._require_default_name("Data source default scope", scope)
+        if scope in self._data_source_defaults:
+            raise DashboardGenerationError(f"Duplicate data source default scope {scope!r}")
+        self._data_source_defaults[scope] = dict(values)
+        return self
+
+    def set_visualization_defaults(
+        self,
+        scope: str,
+        values: Mapping[str, JsonValue],
+    ) -> DashboardBuilder:
+        """Set one global or visualization-type default without implicit merging."""
+
+        self._require_default_name("Visualization default scope", scope)
+        if scope in self._visualization_defaults:
+            raise DashboardGenerationError(f"Duplicate visualization default scope {scope!r}")
+        self._visualization_defaults[scope] = dict(values)
+        return self
+
+    def set_token_default(
+        self,
+        name: str,
+        value: JsonValue,
+        *,
+        namespace: str = "default",
+    ) -> DashboardBuilder:
+        """Set a Dashboard Studio token default in the documented value envelope."""
+
+        self._require_default_name("Token name", name)
+        self._require_default_name("Token namespace", namespace)
+        token_namespace = self._token_defaults.setdefault(namespace, {})
+        if name in token_namespace:
+            raise DashboardGenerationError(f"Duplicate token default {namespace!r}/{name!r}")
+        token_namespace[name] = value
+        return self
 
     def set_application_property(self, name: str, value: JsonValue) -> DashboardBuilder:
         self._application_properties[name] = value
@@ -241,12 +318,23 @@ class DashboardBuilder:
             },
             tabs=Tabs(items=[TabItem(layout_id="layout_main", label="Overview")]),
         )
+        defaults: dict[str, JsonValue] = {}
+        if self._data_source_defaults:
+            defaults["dataSources"] = cast(JsonValue, self._data_source_defaults)
+        if self._visualization_defaults:
+            defaults["visualizations"] = cast(JsonValue, self._visualization_defaults)
+        if self._token_defaults:
+            defaults["tokens"] = {
+                namespace: {name: {"value": value} for name, value in sorted(token_values.items())}
+                for namespace, token_values in sorted(self._token_defaults.items())
+            }
         definition = DashboardDefinition(
             title=self.title,
             description=self.description,
             data_sources=dict(self._data_sources),
             visualizations=dict(self._visualizations),
             inputs=dict(self._inputs),
+            defaults=defaults,
             layout=layout,
             application_properties=dict(self._application_properties),
             expressions=dict(self._expressions),

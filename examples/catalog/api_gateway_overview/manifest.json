@@ -1,0 +1,125 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3536,
+  "definition_sha256": "cf222473cd837762b336b9a3922b7610f027b9ade9af166b8137c64a127bf1c3",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "api_gateway_overview",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_route_red"
+      ],
+      "drilldown_signals": [
+        "trace"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_route_red",
+      "purpose": "Compare request volume, failures, and latency by route.",
+      "required_fields": [
+        "service.name",
+        "http.route",
+        "http.response.status_code",
+        "duration_ms"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_authentication_failures"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_authentication_failures",
+      "purpose": "Track rejected authentication events by route.",
+      "required_fields": [
+        "service.name",
+        "event.name",
+        "http.route"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_throttling"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_throttling",
+      "purpose": "Detect routes constrained by rate limits.",
+      "required_fields": [
+        "service.name",
+        "http.response.status_code",
+        "http.route"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_top_tenants"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_top_tenants",
+      "purpose": "Rank tenant traffic without exposing raw user identifiers.",
+      "required_fields": [
+        "service.name",
+        "tenant.id"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_latency_distribution"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_latency_distribution",
+      "purpose": "Inspect route-level latency percentiles.",
+      "required_fields": [
+        "service.name",
+        "duration_ms",
+        "http.route"
+      ],
+      "signals": [
+        "trace"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

@@ -1,0 +1,126 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3671,
+  "definition_sha256": "bf0c9e41c807b5e4a98d52ef1dd342ad3c86bb9e9c9ca9b861c9f824a4a93520",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "kubernetes_workload_health",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_workload_error_rate"
+      ],
+      "drilldown_signals": [
+        "trace"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_workload_error_rate",
+      "purpose": "Identify workloads whose request failures are rising.",
+      "required_fields": [
+        "k8s.namespace.name",
+        "k8s.workload.name",
+        "http.response.status_code"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_workload_p95_latency"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_workload_p95_latency",
+      "purpose": "Track user-visible workload latency over time.",
+      "required_fields": [
+        "k8s.namespace.name",
+        "k8s.workload.name",
+        "duration_ms"
+      ],
+      "signals": [
+        "trace"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_pod_restarts"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_pod_restarts",
+      "purpose": "Surface unstable pods and workload churn.",
+      "required_fields": [
+        "metric_name",
+        "k8s.namespace.name",
+        "k8s.pod.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_resource_saturation"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_resource_saturation",
+      "purpose": "Locate pods approaching resource limits.",
+      "required_fields": [
+        "metric_name",
+        "k8s.pod.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_failing_pods"
+      ],
+      "drilldown_signals": [
+        "trace"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_failing_pods",
+      "purpose": "Rank pods emitting the most error events.",
+      "required_fields": [
+        "k8s.namespace.name",
+        "k8s.pod.name",
+        "http.response.status_code"
+      ],
+      "signals": [
+        "log"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_dependency_hotspots": {
+      "name": "Dependency hotspots",
+      "options": {
+        "query": "index=otel_traces peer.service=* | stats perc95(duration_ms) AS p95_ms count(eval(http.response.status_code>=500)) AS errors by service.name peer.service | sort - p95_ms | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_dependency_map": {
+      "name": "Dependency map",
+      "options": {
+        "query": "index=otel_traces service.name=* peer.service=* | stats count AS value by service.name peer.service | rename service.name AS source peer.service AS target"
+      },
+      "type": "ds.search"
+    },
+    "ds_recent_deployments": {
+      "name": "Recent deployments",
+      "options": {
+        "query": "index=platform_events change.type=deployment service.name=* | table _time service.name deployment.environment.name change.type | sort - _time"
+      },
+      "type": "ds.search"
+    },
+    "ds_service_red": {
+      "name": "Service RED summary",
+      "options": {
+        "query": "index=otel_traces service.name=* | stats count AS requests count(eval(http.response.status_code>=500)) AS errors perc95(duration_ms) AS p95_ms by service.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_trace_samples": {
+      "name": "Slow trace samples",
+      "options": {
+        "query": "index=otel_traces service.name=* | sort - duration_ms | table _time service.name trace_id span_id duration_ms http.route | head 50"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Service RED health, dependency hotspots, changes, and trace drill-through.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_service_red",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_dependency_map",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_dependency_hotspots",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_recent_deployments",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_trace_samples",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Microservice Service Map",
+  "version": "2",
+  "visualizations": {
+    "viz_dependency_hotspots": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_dependency_hotspots"
+      },
+      "description": "Rank slow and failing downstream dependencies.",
+      "options": {},
+      "title": "Dependency hotspots",
+      "type": "splunk.table"
+    },
+    "viz_dependency_map": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_dependency_map"
+      },
+      "description": "Show request flow between instrumented services.",
+      "options": {},
+      "title": "Dependency map",
+      "type": "splunk.networkGraph"
+    },
+    "viz_recent_deployments": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_recent_deployments"
+      },
+      "description": "Correlate service health with recent changes.",
+      "options": {},
+      "title": "Recent deployments",
+      "type": "splunk.table"
+    },
+    "viz_service_red": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_service_red"
+      },
+      "description": "Compare request health across services.",
+      "options": {},
+      "title": "Service RED summary",
+      "type": "splunk.table"
+    },
+    "viz_trace_samples": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_trace_samples"
+      },
+      "description": "Provide trace identifiers for deep diagnosis.",
+      "options": {},
+      "title": "Slow trace samples",
+      "type": "splunk.table"
+    }
+  }
+}

@@ -1,5 +1,37 @@
 """Version-aware Splunk Enterprise Dashboard Studio generation and validation."""
 
+from splunk_dashboard_studio._version import __version__
+from splunk_dashboard_studio.catalog import (
+    CatalogEntryNotFound,
+    CatalogTargetUnsupported,
+    build_catalog_bundle,
+    build_catalog_dashboard,
+    catalog_entries,
+    portable_telemetry_contract,
+)
+from splunk_dashboard_studio.codec import (
+    RoundTripComparison,
+    RoundTripDifference,
+    StudioView,
+    StudioViewCodecError,
+    compare_roundtrip,
+    decode_view_xml,
+    encode_view_xml,
+)
+from splunk_dashboard_studio.contracts import (
+    AgentSkill,
+    CatalogEntry,
+    DashboardArtifactBundle,
+    DashboardEvidenceManifest,
+    ObservabilityFramework,
+    PanelProvenance,
+    SavedSearchSpec,
+    SkillDescriptor,
+    TelemetryContract,
+    TelemetryField,
+    TelemetrySignal,
+    observability_skill_descriptors,
+)
 from splunk_dashboard_studio.generation import DashboardBuilder, canonical_json
 from splunk_dashboard_studio.graph import (
     GraphAnalysis,
@@ -14,21 +46,45 @@ from splunk_dashboard_studio.validation import validate_dashboard
 from splunk_dashboard_studio.version import EnterpriseVersion, TargetPlatform
 
 __all__ = [
+    "AgentSkill",
+    "CatalogEntry",
+    "CatalogEntryNotFound",
+    "CatalogTargetUnsupported",
+    "DashboardArtifactBundle",
     "DashboardBuilder",
     "DashboardDefinition",
+    "DashboardEvidenceManifest",
     "EnterpriseProfile",
     "EnterpriseVersion",
     "GraphAnalysis",
+    "ObservabilityFramework",
+    "PanelProvenance",
+    "RoundTripComparison",
+    "RoundTripDifference",
+    "SavedSearchSpec",
     "SearchOptimizationPlan",
+    "SkillDescriptor",
+    "StudioView",
+    "StudioViewCodecError",
     "TargetPlatform",
+    "TelemetryContract",
+    "TelemetryField",
+    "TelemetrySignal",
     "ValidationIssue",
     "ValidationReport",
+    "__version__",
     "analyze_search_graph",
     "available_profiles",
+    "build_catalog_bundle",
+    "build_catalog_dashboard",
     "canonical_json",
+    "catalog_entries",
+    "compare_roundtrip",
+    "decode_view_xml",
+    "encode_view_xml",
+    "observability_skill_descriptors",
     "plan_search_optimizations",
+    "portable_telemetry_contract",
     "profile_for",
     "validate_dashboard",
 ]
-
-__version__ = "0.1.0"

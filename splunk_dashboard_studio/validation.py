@@ -94,7 +94,11 @@ def _detected_features(definition: DashboardDefinition) -> set[Feature]:
             features.add(Feature.TIMELINE)
         if visualization_type.startswith("viz.") and visualization_type != "viz.timeline":
             features.add(Feature.CUSTOM_VISUALIZATIONS)
-        if visualization_type in {"splunk.networkgraph", "splunk.network_graph"}:
+        if visualization_type in {
+            "splunk.networkGraph",
+            "splunk.networkgraph",
+            "splunk.network_graph",
+        }:
             features.add(Feature.NETWORK_GRAPH)
     return features
 

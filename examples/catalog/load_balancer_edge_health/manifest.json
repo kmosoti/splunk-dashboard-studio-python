@@ -1,0 +1,116 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3425,
+  "definition_sha256": "1a8fe357e0a5a648cb84e392976c61350125e35952853a6cb16dc2982e119f6c",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "load_balancer_edge_health",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_edge_traffic"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_edge_traffic",
+      "purpose": "Track ingress demand over time.",
+      "required_fields": [
+        "service.name"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_edge_errors"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_edge_errors",
+      "purpose": "Separate client and server failure rates.",
+      "required_fields": [
+        "service.name",
+        "http.response.status_code"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_edge_latency"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_edge_latency",
+      "purpose": "Track tail latency at the edge.",
+      "required_fields": [
+        "service.name",
+        "duration_ms"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_backend_failures"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_backend_failures",
+      "purpose": "Rank unhealthy backend services.",
+      "required_fields": [
+        "service.name",
+        "http.response.status_code",
+        "peer.service"
+      ],
+      "signals": [
+        "log"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_edge_saturation"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_edge_saturation",
+      "purpose": "Show active connection pressure.",
+      "required_fields": [
+        "metric_name",
+        "service.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

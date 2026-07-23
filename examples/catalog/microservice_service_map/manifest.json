@@ -1,0 +1,129 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3627,
+  "definition_sha256": "12e819987861eed98efa935036d807292abec6d45c4cdec176f276146baf5bd9",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "microservice_service_map",
+  "generator_version": "0.2.0",
+  "minimum_target": "10.4.0",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-29.8.0",
+  "official_engine_version": "29.8.0",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_service_red"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_service_red",
+      "purpose": "Compare request health across services.",
+      "required_fields": [
+        "service.name",
+        "http.response.status_code",
+        "duration_ms"
+      ],
+      "signals": [
+        "trace"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_dependency_map"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_dependency_map",
+      "purpose": "Show request flow between instrumented services.",
+      "required_fields": [
+        "service.name",
+        "peer.service"
+      ],
+      "signals": [
+        "trace"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_dependency_hotspots"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_dependency_hotspots",
+      "purpose": "Rank slow and failing downstream dependencies.",
+      "required_fields": [
+        "service.name",
+        "peer.service",
+        "duration_ms",
+        "http.response.status_code"
+      ],
+      "signals": [
+        "trace"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_recent_deployments"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_recent_deployments",
+      "purpose": "Correlate service health with recent changes.",
+      "required_fields": [
+        "service.name",
+        "deployment.environment.name",
+        "change.type"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_trace_samples"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_trace_samples",
+      "purpose": "Provide trace identifiers for deep diagnosis.",
+      "required_fields": [
+        "service.name",
+        "trace_id",
+        "span_id",
+        "duration_ms",
+        "http.route"
+      ],
+      "signals": [
+        "trace"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "10.4.0"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_host_cpu": {
+      "name": "CPU utilization",
+      "options": {
+        "query": "| mstats avg(_value) AS utilization WHERE index=otel_metrics metric_name=\"system.cpu.utilization\" BY host.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_host_disk": {
+      "name": "Disk utilization",
+      "options": {
+        "query": "| mstats max(_value) AS utilization WHERE index=otel_metrics metric_name=\"system.filesystem.utilization\" BY host.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_host_errors": {
+      "name": "Host errors",
+      "options": {
+        "query": "index=otel_logs host.name=* event.name=*error* | stats count AS errors by host.name event.name | sort - errors | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_host_memory": {
+      "name": "Memory utilization",
+      "options": {
+        "query": "| mstats max(_value) AS utilization WHERE index=otel_metrics metric_name=\"system.memory.utilization\" BY host.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_host_network_load": {
+      "name": "Network and load",
+      "options": {
+        "query": "| mstats avg(_value) AS value WHERE index=otel_metrics metric_name IN (\"system.network.io\",\"system.cpu.load_average.15m\") BY metric_name host.name span=5m"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "USE-oriented host and autoscaling capacity overview.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_host_cpu",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_host_memory",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_host_disk",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_host_network_load",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_host_errors",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "EC2 and Host Capacity",
+  "version": "2",
+  "visualizations": {
+    "viz_host_cpu": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_host_cpu"
+      },
+      "description": "Track sustained host CPU utilization.",
+      "options": {},
+      "title": "CPU utilization",
+      "type": "splunk.line"
+    },
+    "viz_host_disk": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_host_disk"
+      },
+      "description": "Identify full or rapidly filling filesystems.",
+      "options": {},
+      "title": "Disk utilization",
+      "type": "splunk.line"
+    },
+    "viz_host_errors": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_host_errors"
+      },
+      "description": "Rank hosts by operating-system and agent errors.",
+      "options": {},
+      "title": "Host errors",
+      "type": "splunk.table"
+    },
+    "viz_host_memory": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_host_memory"
+      },
+      "description": "Find hosts with memory pressure.",
+      "options": {},
+      "title": "Memory utilization",
+      "type": "splunk.line"
+    },
+    "viz_host_network_load": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_host_network_load"
+      },
+      "description": "Compare network throughput with system load.",
+      "options": {},
+      "title": "Network and load",
+      "type": "splunk.line"
+    }
+  }
+}

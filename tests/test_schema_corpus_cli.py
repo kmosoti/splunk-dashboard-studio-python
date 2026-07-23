@@ -8,7 +8,11 @@ import pytest
 from splunk_dashboard_studio.cli import main
 from splunk_dashboard_studio.corpus import corpus_jsonl, generate_corpus, write_corpus
 from splunk_dashboard_studio.models import DashboardDefinition, Layout
-from splunk_dashboard_studio.schema import agent_contract_schema, dashboard_definition_schema
+from splunk_dashboard_studio.schema import (
+    agent_contract_schema,
+    dashboard_definition_schema,
+    schema_bundle,
+)
 
 
 def test_agent_schema_contains_aliases_and_capability_extension() -> None:
@@ -19,6 +23,17 @@ def test_agent_schema_contains_aliases_and_capability_extension() -> None:
     agent_schema = agent_contract_schema()
     assert agent_schema["properties"]["target"]
     assert agent_schema["x-splunk-enterprise"]["minimum_supported"] == "9.4.3"
+    assert len(agent_schema["x-observability-skills"]) == 8
+
+    bundle = schema_bundle()
+    assert bundle["schema_version"] == "splunk-dashboard-studio-schema-bundle/v1"
+    assert set(bundle["schemas"]) == {
+        "agent",
+        "artifact_bundle",
+        "dashboard",
+        "skill_descriptor",
+        "telemetry_contract",
+    }
 
 
 def test_layout_shape_must_be_complete() -> None:
@@ -40,7 +55,7 @@ def test_corpus_is_deterministic_and_writable(tmp_path: Path) -> None:
     assert first == second
     assert first.endswith("\n")
     cases = [json.loads(line) for line in first.splitlines()]
-    assert len(cases) == 8
+    assert len(cases) == 17
     assert {case["case_id"] for case in cases} == {
         case.case_id for case in generate_corpus("10.2.0")
     }
@@ -61,9 +76,12 @@ def test_cli_schema_profiles_and_corpus(capsys: pytest.CaptureFixture[str], tmp_
     assert main(["schema", "agent"]) == 0
     assert "x-splunk-enterprise" in json.loads(capsys.readouterr().out)
 
+    assert main(["schema", "bundle"]) == 0
+    assert json.loads(capsys.readouterr().out)["schema_version"].endswith("/v1")
+
     output = tmp_path / "generated.jsonl"
     assert main(["corpus", "--target", "9.4.3", "--output", str(output)]) == 0
-    assert len(output.read_text(encoding="utf-8").splitlines()) == 8
+    assert len(output.read_text(encoding="utf-8").splitlines()) == 17
 
 
 def test_cli_validate_optimize_and_error(
