@@ -21,11 +21,11 @@ builder.add_visualization(
 print(canonical_json(builder.build(), indent=2))
 ```
 
-Version 0.2.0 is an unreleased release candidate. The package is intentionally Splunk
+Version 0.2.1 is an unreleased release candidate. The package is intentionally Splunk
 Enterprise-only. It does not claim Splunk Cloud compatibility, connect to a deployment, create
 saved searches, publish dashboards, or install Node at runtime.
 
-## Included in v0.2
+## Included in v0.2.1
 
 - Exact target profiles for the actively supported 9.4, 10.0, 10.2, and 10.4 release lines.
 - Deterministic builders for searches, saved-search references, chains, defaults, tokens, inputs,
@@ -37,6 +37,8 @@ saved searches, publish dashboards, or install Node at runtime.
 - Ten packaged observability dashboards with checked definitions and manifests.
 - An offline codec for documented `data/ui/views` XML, including safe CDATA encoding, normalized
   SHA-256 comparison, and deterministic JSON-pointer diffs.
+- An integration-only Splunk Free and Playwright harness for exact search math, live REST
+  publish/readback, browser rendering, screenshot regression, and advisory vision QA.
 - Locked Splunk-owned NPM validation engines in CI without redistributing them in Python artifacts.
 
 ## Development install
@@ -74,6 +76,35 @@ The package deliberately ships no sample telemetry or hidden index assumptions.
 See [the example catalog](docs/example-catalog.md) and the checked files under
 [`examples/catalog/`](examples/catalog/).
 
+## Source-derived templates
+
+The portable catalog is complemented by a provenance-locked source-template lane. The first entry
+imports the actual Splunk Health Dashboard Studio definition and eight Canvas visualization
+contracts from
+[`rcastley/splunk-custom-visualizations`](https://github.com/rcastley/splunk-custom-visualizations)
+at an exact Apache-2.0 revision:
+
+```console
+uv run splunk-studio template list
+uv run splunk-studio template build rcastley_splunk_health --target 10.2.0
+uv run splunk-studio template build rcastley_splunk_health_portable --target 9.4.3
+```
+
+The source-faithful template requires Splunk Enterprise 10.2+ and the matching `splunk_health`
+app. Its distinct portable port keeps the searches and layout but uses only built-in tables and a
+single value, so it renders on Splunk Enterprise 9.4+ without the app. The Python distribution
+ships both definitions and attribution, not the custom app or its JavaScript. See
+[source-derived templates](docs/source-templates.md) for provenance, synchronization, and live-test
+behavior.
+
+## Render samples
+
+The [dashboard gallery](docs/gallery.md) contains five 1440 by 1100 captures copied exactly from
+reviewed live Splunk baselines, including the portable Splunk Health dashboard on Enterprise 9.4.3
+and the app-qualified source dashboard on 10.4.0.
+
+[![Splunk Health portable dashboard rendered on Splunk Enterprise 9.4.3](docs/images/dashboard-samples/splunk-health-portable-9.4.png)](docs/gallery.md)
+
 ## CLI
 
 ```console
@@ -108,9 +139,27 @@ comparison = compare_roundtrip(view, xml)
 assert comparison.equivalent
 ```
 
-The codec implements the documented storage envelope only. It performs no HTTP requests and has
-not yet been verified against a disposable live Splunk publish/readback fixture. Treat it as an
-offline serialization and drift-analysis tool, not deployment automation.
+The codec implements the documented storage envelope only and performs no HTTP requests. The
+separate disposable integration harness exercises that envelope against live Splunk; the runtime
+package remains offline serialization and drift-analysis tooling, not deployment automation.
+
+## Live render regression
+
+The integration harness uses a pinned official Splunk Enterprise standalone in Free mode and a
+locked Playwright/Chromium environment. It validates untouched catalog SPL against empty typed
+indexes, exact synthetic render math, REST publish/readback, panel visibility, browser failures,
+and target-specific screenshots. It also emits a QA overview and provider-neutral vision report
+contract.
+
+Invoking the harness starts the official image and automatically passes Splunk's `--accept-license`
+flag; targets that require it also receive `--accept-sgt-current-at-splunk-com`. Run it only after
+reviewing the linked Splunk terms. Authentication and ACL behavior are intentionally not test
+objectives.
+
+See [live visual regression](docs/visual-regression.md) before running the official image. The
+repository includes reviewed full-suite baselines generated from every pinned target; normal local
+and CI runs compare against them without rewriting snapshots. Candidate regeneration remains a
+manual, review-before-commit operation.
 
 ## Validation authority
 
@@ -120,9 +169,10 @@ The native validator and official CI engines have different jobs:
 - Locked Splunk NPM schemas own exact Splunk option shapes and the official DOS parser.
 - Release evidence is valid only when every required lane agrees with its declared expectation.
 
-Node remains CI-only. Build inspection rejects JavaScript, NPM manifests, and `node_modules` from
-both wheel and source-distribution artifacts. See [architecture](docs/architecture.md) and
-[compatibility policy](docs/compatibility.md).
+Node remains integration/CI-only. Build inspection rejects the entire integration harness,
+JavaScript/TypeScript, NPM manifests, browser outputs, and `node_modules` from both wheel and
+source-distribution artifacts. See [architecture](docs/architecture.md) and [compatibility
+policy](docs/compatibility.md).
 
 ## Security and status
 

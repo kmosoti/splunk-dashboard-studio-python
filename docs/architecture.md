@@ -16,6 +16,8 @@ authoring, evidence, official validation, and deployment.
    validation.
 6. `codec.py` encodes and decodes the documented `data/ui/views` XML envelope without networking.
 7. `cli.py` exposes these surfaces as deterministic JSON or JSONL commands.
+8. `integration/splunk-visual/` is an unshipped adapter that owns disposable Splunk REST, search,
+   browser, screenshot, and vision-handoff evidence.
 
 Canonical dashboard JSON contains only fields Splunk owns. Telemetry assumptions, provenance,
 saved-search proposals, validation state, and evidence grades stay in the artifact manifest so
@@ -43,7 +45,8 @@ Neither lane is a complete oracle:
   report official validation as `not_run`; CI output is the proof of an official-engine run.
 
 A release candidate is acceptable only when native expectations, official-engine expectations,
-generated artifacts, typing, and distribution inspection all pass.
+generated artifacts, typing, distribution inspection, and the required live visual target matrix
+all pass.
 
 ## CI-only official engines
 
@@ -75,13 +78,26 @@ bundle` includes dashboard, artifact, telemetry, and skill schemas in one docume
 descriptors declare inputs, outputs, heuristics, constraints, and tool names, but do not execute or
 grant authority. See [skills](skills.md).
 
-## Offline round-trip boundary
+## Live integration boundary
 
 `StudioView`, `encode_view_xml`, `decode_view_xml`, and `compare_roundtrip` implement the documented
 `<dashboard version="2">` format. The decoder rejects DTD/entity declarations, normalizes JSON via
 `DashboardDefinition`, ignores unknown server-added XML fields, and reports deterministic
 JSON-pointer differences.
 
-There is intentionally no HTTP client, SDK dependency, credential handling, publish command, or
-live CI fixture in v0.2. A future integration extra may add a disposable publish/readback test, but
-it must remain separate from the compiler runtime.
+The compiler runtime still contains no HTTP client, SDK dependency, credential handling, or
+publish command. The integration-only harness uses the standard library to publish generated test
+views to a disposable Free-mode standalone, read them back, dispatch source and fixture searches,
+and remove them. It is not installed by the wheel or sdist.
+
+Playwright owns the browser evidence boundary. Exact synthetic rows are validated through the
+search export API before Chromium renders them; screenshots therefore cannot substitute for math.
+Reviewed target-specific baselines are deterministic gates. The QA overview and vision report are
+an advisory fourth-party interpretation unless a deterministic result corroborates the finding.
+
+The harness binds only localhost ports, uses synthetic data and a throwaway password, and destroys
+the container volume. A fixture-local `server.conf` override enables Free-mode remote management
+for REST validation; it is never packaged or presented as a production setting. The harness does
+not test authentication, ACLs, or production deployment. Invoking it automatically passes Splunk's
+license-acceptance flag and the target-specific current general-terms flag, so operators must
+review the linked terms before running it.

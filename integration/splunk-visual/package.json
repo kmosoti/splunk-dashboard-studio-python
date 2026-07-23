@@ -1,0 +1,18 @@
+{
+  "name": "splunk-dashboard-studio-visual-regression",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list",
+    "qa:overview": "node scripts/render-overview.mjs",
+    "qa:validate-vision": "node scripts/validate-vision-report.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

@@ -8,7 +8,7 @@
   "definition_sha256": "1a8fe357e0a5a648cb84e392976c61350125e35952853a6cb16dc2982e119f6c",
   "engine_evidence": "temporal_surrogate",
   "example_id": "load_balancer_edge_health",
-  "generator_version": "0.2.0",
+  "generator_version": "0.2.1",
   "minimum_target": "9.4.3",
   "native_validation": "valid",
   "official_engine_id": "dashboard-27.5.1",

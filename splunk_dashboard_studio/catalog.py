@@ -6,6 +6,8 @@ import hashlib
 from dataclasses import dataclass
 from typing import Literal
 
+from pydantic import JsonValue
+
 from splunk_dashboard_studio._version import __version__
 from splunk_dashboard_studio.contracts import (
     CatalogEntry,
@@ -295,6 +297,7 @@ class _PanelSpec:
     signals: tuple[TelemetrySignal, ...]
     required_fields: tuple[str, ...]
     drilldown_signals: tuple[TelemetrySignal, ...] = ()
+    node_source_query: str | None = None
 
 
 @dataclass(frozen=True)
@@ -323,6 +326,7 @@ def _panel(
     required_fields: tuple[str, ...],
     *,
     drilldown_signals: tuple[TelemetrySignal, ...] = (),
+    node_source_query: str | None = None,
 ) -> _PanelSpec:
     return _PanelSpec(
         slug=slug,
@@ -334,6 +338,7 @@ def _panel(
         signals=signals,
         required_fields=required_fields,
         drilldown_signals=drilldown_signals,
+        node_source_query=node_source_query,
     )
 
 
@@ -745,6 +750,11 @@ _SPECS = (
                 (TelemetrySignal.TRACE,),
                 ("service.name", "peer.service"),
                 drilldown_signals=(TelemetrySignal.LOG,),
+                node_source_query=(
+                    "| eval nodeIds=mvappend(source,target) | mvexpand nodeIds "
+                    "| stats sum(value) AS nodeValues by nodeIds "
+                    "| eval nodeTexts=nodeIds | table nodeIds nodeTexts nodeValues"
+                ),
             ),
             _panel(
                 "dependency_hotspots",
@@ -1096,12 +1106,15 @@ def portable_telemetry_contract() -> TelemetryContract:
 
 
 def _provenance(panel: _PanelSpec) -> PanelProvenance:
+    data_source_ids: tuple[str, ...] = (f"ds_{panel.slug}",)
+    if panel.node_source_query is not None:
+        data_source_ids += (f"ds_{panel.slug}_nodes",)
     return PanelProvenance(
         panel_id=f"viz_{panel.slug}",
         purpose=panel.purpose,
         frameworks=panel.frameworks,
         signals=panel.signals,
-        data_source_ids=(f"ds_{panel.slug}",),
+        data_source_ids=data_source_ids,
         required_fields=panel.required_fields,
         drilldown_signals=panel.drilldown_signals,
     )
@@ -1203,13 +1216,39 @@ def build_catalog_dashboard(
             earliest=None,
             latest=None,
         )
+        data_sources = {"primary": data_source_id}
+        visualization_options: dict[str, JsonValue] | None = None
+        visualization_context: dict[str, JsonValue] | None = None
+        if panel.node_source_query is not None:
+            node_source_id = builder.add_chain(
+                parent=data_source_id,
+                query=panel.node_source_query,
+                name=f"{panel.title} nodes",
+                data_source_id=f"ds_{panel.slug}_nodes",
+            )
+            data_sources["nodeSource"] = node_source_id
+            visualization_options = {
+                "source": '> primary | seriesByName("source")',
+                "target": '> primary | seriesByName("target")',
+                "nodeIds": '> nodeSource | seriesByName("nodeIds")',
+                "nodeTexts": '> nodeSource | seriesByName("nodeTexts")',
+                "nodeValues": '> nodeSource | seriesByName("nodeValues")',
+                "nodeSize": 24,
+                "linkWidth": '> primary | seriesByName("value") | lerp(linkWidthScale)',
+                "layout": "grid",
+                "gridColumns": 2,
+                "showDirection": "oneWay",
+            }
+            visualization_context = {"linkWidthScale": {"outputMin": 2, "outputMax": 8}}
         builder.add_visualization(
             panel.visualization_type,
             name=panel.title,
             visualization_id=f"viz_{panel.slug}",
-            data_sources={"primary": data_source_id},
+            data_sources=data_sources,
             title=panel.title,
             description=panel.purpose,
+            options=visualization_options,
+            context=visualization_context,
         )
     return builder.build(canvas_width=1440)
 

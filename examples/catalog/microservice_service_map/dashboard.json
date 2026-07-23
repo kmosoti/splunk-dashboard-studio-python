@@ -18,6 +18,14 @@
       },
       "type": "ds.search"
     },
+    "ds_dependency_map_nodes": {
+      "name": "Dependency map nodes",
+      "options": {
+        "extend": "ds_dependency_map",
+        "query": "| eval nodeIds=mvappend(source,target) | mvexpand nodeIds | stats sum(value) AS nodeValues by nodeIds | eval nodeTexts=nodeIds | table nodeIds nodeTexts nodeValues"
+      },
+      "type": "ds.chain"
+    },
     "ds_recent_deployments": {
       "name": "Recent deployments",
       "options": {
@@ -161,12 +169,29 @@
       "type": "splunk.table"
     },
     "viz_dependency_map": {
-      "context": {},
+      "context": {
+        "linkWidthScale": {
+          "outputMax": 8,
+          "outputMin": 2
+        }
+      },
       "dataSources": {
+        "nodeSource": "ds_dependency_map_nodes",
         "primary": "ds_dependency_map"
       },
       "description": "Show request flow between instrumented services.",
-      "options": {},
+      "options": {
+        "gridColumns": 2,
+        "layout": "grid",
+        "linkWidth": "> primary | seriesByName(\"value\") | lerp(linkWidthScale)",
+        "nodeIds": "> nodeSource | seriesByName(\"nodeIds\")",
+        "nodeSize": 24,
+        "nodeTexts": "> nodeSource | seriesByName(\"nodeTexts\")",
+        "nodeValues": "> nodeSource | seriesByName(\"nodeValues\")",
+        "showDirection": "oneWay",
+        "source": "> primary | seriesByName(\"source\")",
+        "target": "> primary | seriesByName(\"target\")"
+      },
       "title": "Dependency map",
       "type": "splunk.networkGraph"
     },

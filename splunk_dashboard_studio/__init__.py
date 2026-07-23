@@ -25,8 +25,13 @@ from splunk_dashboard_studio.contracts import (
     DashboardEvidenceManifest,
     ObservabilityFramework,
     PanelProvenance,
+    RequiredSplunkApp,
     SavedSearchSpec,
     SkillDescriptor,
+    SourceTemplateBundle,
+    SourceTemplateEntry,
+    SourceTemplateLesson,
+    SourceTemplateOrigin,
     TelemetryContract,
     TelemetryField,
     TelemetrySignal,
@@ -42,6 +47,15 @@ from splunk_dashboard_studio.graph import (
 from splunk_dashboard_studio.issues import ValidationIssue, ValidationReport
 from splunk_dashboard_studio.models import DashboardDefinition
 from splunk_dashboard_studio.profiles import EnterpriseProfile, available_profiles, profile_for
+from splunk_dashboard_studio.source_templates import (
+    SourceTemplateError,
+    SourceTemplateIntegrityError,
+    SourceTemplateNotFound,
+    SourceTemplateTargetUnsupported,
+    build_source_template,
+    build_source_template_bundle,
+    source_template_entries,
+)
 from splunk_dashboard_studio.validation import validate_dashboard
 from splunk_dashboard_studio.version import EnterpriseVersion, TargetPlatform
 
@@ -59,11 +73,20 @@ __all__ = [
     "GraphAnalysis",
     "ObservabilityFramework",
     "PanelProvenance",
+    "RequiredSplunkApp",
     "RoundTripComparison",
     "RoundTripDifference",
     "SavedSearchSpec",
     "SearchOptimizationPlan",
     "SkillDescriptor",
+    "SourceTemplateBundle",
+    "SourceTemplateEntry",
+    "SourceTemplateError",
+    "SourceTemplateIntegrityError",
+    "SourceTemplateLesson",
+    "SourceTemplateNotFound",
+    "SourceTemplateOrigin",
+    "SourceTemplateTargetUnsupported",
     "StudioView",
     "StudioViewCodecError",
     "TargetPlatform",
@@ -77,6 +100,8 @@ __all__ = [
     "available_profiles",
     "build_catalog_bundle",
     "build_catalog_dashboard",
+    "build_source_template",
+    "build_source_template_bundle",
     "canonical_json",
     "catalog_entries",
     "compare_roundtrip",
@@ -86,5 +111,6 @@ __all__ = [
     "plan_search_optimizations",
     "portable_telemetry_contract",
     "profile_for",
+    "source_template_entries",
     "validate_dashboard",
 ]

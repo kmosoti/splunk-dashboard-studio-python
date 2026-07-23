@@ -122,6 +122,45 @@ class DashboardArtifactBundle(FrozenContract):
     manifest: DashboardEvidenceManifest
 
 
+class SourceTemplateOrigin(FrozenContract):
+    repository: str = Field(min_length=1)
+    revision: str = Field(pattern=r"^[0-9a-f]{40}$")
+    license: Literal["Apache-2.0"]
+    source_paths: tuple[str, ...] = Field(min_length=1)
+    definition_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    attribution: str = Field(min_length=1)
+
+
+class RequiredSplunkApp(FrozenContract):
+    app_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    repository: str = Field(min_length=1)
+    revision: str = Field(pattern=r"^[0-9a-f]{40}$")
+    install_scope: Literal["operator_or_integration"] = "operator_or_integration"
+
+
+class SourceTemplateLesson(FrozenContract):
+    lesson_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    summary: str = Field(min_length=1)
+    enforcement: tuple[str, ...] = Field(min_length=1)
+
+
+class SourceTemplateEntry(FrozenContract):
+    template_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    title: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    minimum_target: EnterpriseVersion
+    origin: SourceTemplateOrigin
+    required_apps: tuple[RequiredSplunkApp, ...] = ()
+    adaptations: tuple[str, ...] = ()
+    lessons: tuple[SourceTemplateLesson, ...] = Field(min_length=1)
+    tags: tuple[str, ...] = ()
+
+
+class SourceTemplateBundle(FrozenContract):
+    template: SourceTemplateEntry
+    definition: DashboardDefinition
+
+
 class AgentSkill(StrEnum):
     DATA_DISCOVERY = "data_discovery"
     SPL_OPTIMIZATION = "spl_optimization"

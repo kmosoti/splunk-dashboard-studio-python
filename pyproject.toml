@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "splunk-dashboard-studio-python"
-version = "0.2.0"
+version = "0.2.1"
 description = "Deterministic, version-aware Splunk Enterprise Dashboard Studio tooling for Python"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 authors = [{ name = "Kmosoti" }]
 keywords = ["splunk", "dashboard-studio", "pydantic", "spl", "validation"]
 classifiers = [
@@ -50,6 +51,7 @@ include = [
   "/CHANGELOG.md",
   "/LICENSE",
   "/README.md",
+  "/THIRD_PARTY_NOTICES.md",
   "/docs",
   "/examples",
   "/pyproject.toml",
@@ -60,11 +62,15 @@ include = [
 exclude = [
   "/.github",
   "/benchmarks",
+  "/integration",
   "/node_modules",
   "**/*.js",
   "**/*.cjs",
+  "**/*.mjs",
   "**/package.json",
   "**/package-lock.json",
+  "**/*.ts",
+  "**/*.tsx",
 ]
 
 [tool.pytest.ini_options]

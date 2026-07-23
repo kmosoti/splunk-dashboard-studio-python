@@ -92,7 +92,9 @@ def _detected_features(definition: DashboardDefinition) -> set[Feature]:
             features.add(Feature.CHART_TRELLIS)
         if visualization_type in {"splunk.timeline", "viz.timeline"}:
             features.add(Feature.TIMELINE)
-        if visualization_type.startswith("viz.") and visualization_type != "viz.timeline":
+        if "." in visualization_type and not (
+            visualization_type.startswith("splunk.") or visualization_type == "viz.timeline"
+        ):
             features.add(Feature.CUSTOM_VISUALIZATIONS)
         if visualization_type in {
             "splunk.networkGraph",

@@ -9,8 +9,15 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 PROHIBITED_NAMES = {"package-lock.json", "package.json"}
-PROHIBITED_PARTS = {"node_modules"}
-PROHIBITED_SUFFIXES = {".cjs", ".js", ".mjs"}
+PROHIBITED_PARTS = {
+    ".local-browsers",
+    "artifacts",
+    "integration",
+    "node_modules",
+    "playwright-report",
+    "test-results",
+}
+PROHIBITED_SUFFIXES = {".cjs", ".js", ".mjs", ".ts", ".tsx"}
 
 
 def artifact_members(path: Path) -> list[str]:

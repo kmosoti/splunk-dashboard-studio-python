@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict
 from splunk_dashboard_studio.contracts import (
     DashboardArtifactBundle,
     SkillDescriptor,
+    SourceTemplateBundle,
+    SourceTemplateEntry,
     TelemetryContract,
     observability_skill_descriptors,
 )
@@ -50,6 +52,11 @@ def schema_bundle() -> dict[str, Any]:
             ),
             "dashboard": dashboard_definition_schema(),
             "skill_descriptor": SkillDescriptor.model_json_schema(mode="validation"),
+            "source_template_bundle": SourceTemplateBundle.model_json_schema(
+                by_alias=True,
+                mode="validation",
+            ),
+            "source_template_entry": SourceTemplateEntry.model_json_schema(mode="validation"),
             "telemetry_contract": TelemetryContract.model_json_schema(mode="validation"),
         },
         "x-splunk-enterprise": profile_manifest(),

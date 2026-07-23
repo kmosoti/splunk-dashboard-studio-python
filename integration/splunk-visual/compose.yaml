@@ -1,0 +1,20 @@
+name: splunk-dashboard-visual-${SPLUNK_TARGET_SLUG:-local}
+
+services:
+  splunk:
+    image: ${SPLUNK_IMAGE:?Resolve a pinned image with scripts/harness.py image}
+    platform: linux/amd64
+    environment:
+      SPLUNK_LICENSE_URI: Free
+      SPLUNK_DEFAULTS_URL: file:///tmp/visual-qa-defaults.yml
+      SPLUNK_PASSWORD: ${SPLUNK_PASSWORD:?Set an ephemeral test password}
+      SPLUNK_ROLE: splunk_standalone
+      SPLUNK_START_ARGS: ${SPLUNK_START_ARGS:---accept-license}
+      SPLUNK_GENERAL_TERMS: ${SPLUNK_GENERAL_TERMS:-}
+    volumes:
+      - ./defaults.yml:/tmp/visual-qa-defaults.yml:ro
+    ports:
+      - "127.0.0.1:${SPLUNK_WEB_PORT:-8000}:8000"
+      - "127.0.0.1:${SPLUNK_MGMT_PORT:-8089}:8089"
+    shm_size: 1gb
+    stop_grace_period: 2m

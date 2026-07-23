@@ -8,7 +8,7 @@
   "definition_sha256": "bf0c9e41c807b5e4a98d52ef1dd342ad3c86bb9e9c9ca9b861c9f824a4a93520",
   "engine_evidence": "temporal_surrogate",
   "example_id": "kubernetes_workload_health",
-  "generator_version": "0.2.0",
+  "generator_version": "0.2.1",
   "minimum_target": "9.4.3",
   "native_validation": "valid",
   "official_engine_id": "dashboard-27.5.1",

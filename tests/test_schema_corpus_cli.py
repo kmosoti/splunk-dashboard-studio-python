@@ -32,6 +32,8 @@ def test_agent_schema_contains_aliases_and_capability_extension() -> None:
         "artifact_bundle",
         "dashboard",
         "skill_descriptor",
+        "source_template_bundle",
+        "source_template_entry",
         "telemetry_contract",
     }
 
@@ -55,7 +57,7 @@ def test_corpus_is_deterministic_and_writable(tmp_path: Path) -> None:
     assert first == second
     assert first.endswith("\n")
     cases = [json.loads(line) for line in first.splitlines()]
-    assert len(cases) == 17
+    assert len(cases) == 19
     assert {case["case_id"] for case in cases} == {
         case.case_id for case in generate_corpus("10.2.0")
     }
@@ -81,7 +83,7 @@ def test_cli_schema_profiles_and_corpus(capsys: pytest.CaptureFixture[str], tmp_
 
     output = tmp_path / "generated.jsonl"
     assert main(["corpus", "--target", "9.4.3", "--output", str(output)]) == 0
-    assert len(output.read_text(encoding="utf-8").splitlines()) == 17
+    assert len(output.read_text(encoding="utf-8").splitlines()) == 18
 
 
 def test_cli_validate_optimize_and_error(

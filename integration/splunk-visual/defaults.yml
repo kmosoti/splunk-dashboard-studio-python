@@ -1,0 +1,6 @@
+splunk:
+  conf:
+    server:
+      content:
+        general:
+          allowRemoteLogin: always

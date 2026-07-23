@@ -1,0 +1,37 @@
+{
+  "architecture": "linux/amd64",
+  "generated_on": "2026-07-23",
+  "playwright": "1.61.1",
+  "review": "full-suite deterministic checks and visual QA overview",
+  "schema_version": "splunk-visual-baselines/v1",
+  "targets": {
+    "9.4.3": {
+      "baseline_set_sha256": "f446d38102139aae2e0597f1d6b21d62cee9638c6315136f5549698b74303fbd",
+      "image": "splunk/splunk:9.4.3@sha256:27344f73cbe07c3ea003164dbabef38e08e56efb193b39095cf56f8784a42dbe",
+      "result": "passed",
+      "screenshot_count": 67,
+      "suite": "full"
+    },
+    "10.0.0": {
+      "baseline_set_sha256": "4ce31a8af50d0259b93049f706b0729be2051e21762541bf5e418f5c309b34bc",
+      "image": "splunk/splunk:10.0.0@sha256:10da23a5c78397b38328ed863ca2826390c329c517f9aff7a4978f30e5208e78",
+      "result": "passed",
+      "screenshot_count": 67,
+      "suite": "full"
+    },
+    "10.2.0": {
+      "baseline_set_sha256": "67852f9a53c737743ef6e67414bb5e85c28c92e01a0d319fac9b51a715b9cb2c",
+      "image": "splunk/splunk:10.2.0@sha256:a7a7d800cdf470eeedf5a8eb2a4ea1bb07ade9bef5c95f1c65eabab08e7ac391",
+      "result": "passed",
+      "screenshot_count": 67,
+      "suite": "full"
+    },
+    "10.4.0": {
+      "baseline_set_sha256": "fb22f7bb0b5566754cfb6207f5109c0414f1a7f77bb6b88def4904b85f9a6da7",
+      "image": "splunk/splunk:10.4.0@sha256:5fef7b0d2c83f6e8b3fe3cda5885e2a01e3a6eb99d8502e6333aaa64e7021f62",
+      "result": "passed",
+      "screenshot_count": 73,
+      "suite": "full"
+    }
+  }
+}

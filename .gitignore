@@ -16,3 +16,8 @@ node_modules/
 compatibility-report.json
 corpus.jsonl
 schema.json
+/integration/splunk-visual/artifacts/
+/integration/splunk-visual/playwright-report/
+/integration/splunk-visual/test-results/
+/integration/splunk-visual/blob-report/
+/integration/splunk-visual/storage-state.json

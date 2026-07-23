@@ -1,0 +1,113 @@
+{
+  "app": {
+    "app_id": "splunk_health",
+    "files": {
+      "splunk_health/README/savedsearches.conf.spec": "c6576a4e795de6f6a3b3e8901673ec38cad9e45e6d54515b60fbae0498f224f1",
+      "splunk_health/appserver/static/visualizations/forwarder_heatmap/formatter.html": "c876f9f5debc571bd4d8a7f99eea4d9536d855a52696f165d04eae6c8d76ecdd",
+      "splunk_health/appserver/static/visualizations/forwarder_heatmap/preview.png": "c9b5877c5d50c803fffff585e1cf8ee23ba5e4c1d1d47e2ac15aeb5d762dd0c1",
+      "splunk_health/appserver/static/visualizations/forwarder_heatmap/visualization.css": "ac925dc521b88dec6c0c027ae4edae1bee9c7d77cf3d677a5a46b38a226ebd7e",
+      "splunk_health/appserver/static/visualizations/forwarder_heatmap/visualization.js": "ac99f981ffcbc1ac7c4bf356cad0c5f10062f96ce7c2655bcaae0b44dabfb3ba",
+      "splunk_health/appserver/static/visualizations/index_storage/formatter.html": "9f0d3832c2d6e4965591537082c2b86ca5525acd8f430b7d294266bd00370106",
+      "splunk_health/appserver/static/visualizations/index_storage/preview.png": "9f5334e1b3a4f25ad3775907a09d981e18ac4216b30c0d262536526fe29f8bc7",
+      "splunk_health/appserver/static/visualizations/index_storage/visualization.css": "c616b1a2cd860a808c75b7ae6f32da425537e61059032b2593d9b17494c6955b",
+      "splunk_health/appserver/static/visualizations/index_storage/visualization.js": "a13c977614539e81594c8d0e4a92bc1cc25d313f5eb69c5a58586feb88bc0d33",
+      "splunk_health/appserver/static/visualizations/indexing_pipeline_flow/formatter.html": "0a91c94b33292766bc42454b035d5e7ca19319937c42670c4db19a1cff120df5",
+      "splunk_health/appserver/static/visualizations/indexing_pipeline_flow/visualization.css": "505872cd42773f6457cb2225a8e94ddaefca74b756374c8a7a81017bf3f2a46c",
+      "splunk_health/appserver/static/visualizations/indexing_pipeline_flow/visualization.js": "8771b405b2a41857c12f86456cc8f9ca227ecbb70c1ccbf203746396a5bddccd",
+      "splunk_health/appserver/static/visualizations/license_gauge/formatter.html": "b450d9cac0cd7f2921516f94eb270306739f4e9e4c758237a75c2a2193e2da06",
+      "splunk_health/appserver/static/visualizations/license_gauge/preview.png": "9be150b0ffc2d334d7958cf50d2a5fc967694d9460a48e44fcdc9d4381c8b4de",
+      "splunk_health/appserver/static/visualizations/license_gauge/visualization.css": "0697f44848245a741c8114fd213bd0578f6a5bc1f12c583d5fdb84239a5705b2",
+      "splunk_health/appserver/static/visualizations/license_gauge/visualization.js": "a8496a93dccb5a30f6a21a64277eb984fc506881c4523fd8d015721903890134",
+      "splunk_health/appserver/static/visualizations/resource_gauge/formatter.html": "c1e9f74c280a3bfd60c2d1e3741bb2870224ab2eecfab7832ec9f0924eb6e914",
+      "splunk_health/appserver/static/visualizations/resource_gauge/preview.png": "aeb45466bbadcfd2d87769563a7ab41230f38e0e636f61dd73d7def06bd7d28f",
+      "splunk_health/appserver/static/visualizations/resource_gauge/visualization.css": "92646c4f2977f978077e6e4f2f716f373e603684e144af44f5134f2a070b1f67",
+      "splunk_health/appserver/static/visualizations/resource_gauge/visualization.js": "3508b662999da86e83c14305cceae1f0f855c8c5179a65dd1b356daeecfd4683",
+      "splunk_health/appserver/static/visualizations/scheduler_health/formatter.html": "89374fd1f9ae51afb934367281dfc0310ba93f4e0581c202aecf9ae6a96e00e9",
+      "splunk_health/appserver/static/visualizations/scheduler_health/preview.png": "e53802c19f7f88f0a821362c8f5b128377c93f3beea030c6984499fa845d00c1",
+      "splunk_health/appserver/static/visualizations/scheduler_health/visualization.css": "84fbb1cca9181d28e2a5576573ea27de1dcb4173aa9405774d518aa43cd4eeee",
+      "splunk_health/appserver/static/visualizations/scheduler_health/visualization.js": "6482aecf636ca6743f130bdade914291e375d17d515c6e142f62222c3b62d6e7",
+      "splunk_health/appserver/static/visualizations/search_activity/formatter.html": "238a5edd7c9980d1d8902f549333e1e7676ee64d66c573932d54f6fb9d918f35",
+      "splunk_health/appserver/static/visualizations/search_activity/preview.png": "062d57c8e725932699fe4ff98bbfa17b6717b1e5f2b6513329a851d9c8791cff",
+      "splunk_health/appserver/static/visualizations/search_activity/visualization.css": "6361097377efb5915ef9f380c2c8152eb8fb78da158666f6613d0f65c8b0a948",
+      "splunk_health/appserver/static/visualizations/search_activity/visualization.js": "d14afdfdad09699b27fe26ef632e6d562346f316ffb87c0bbe1f90bfa5b27caa",
+      "splunk_health/appserver/static/visualizations/splunk_status_board/formatter.html": "af3e97fde02f2719a453e0d1623c52f48ae5d90cc5849bb1ebfce4c6f2cfac8d",
+      "splunk_health/appserver/static/visualizations/splunk_status_board/preview.png": "3135cfee8fb5dd35b4bd620c81ca5aad29ad2613ad2345b58a9e5107beeef1ef",
+      "splunk_health/appserver/static/visualizations/splunk_status_board/visualization.css": "376eb78755c23a809a9ccaebae31c863943ec780533c3815dacdb6c4d996d501",
+      "splunk_health/appserver/static/visualizations/splunk_status_board/visualization.js": "deb0128d653b8a1ca716f96f2a578889a8bd16751a086653f8fae44b665d92de",
+      "splunk_health/default/app.conf": "cba00c1eddac79532e6bff84f5ee991a1ff6cbdd5d20b19e337ca525da414422",
+      "splunk_health/default/data/ui/nav/default.xml": "9e5b30fe039768507bc53052969d4651cc506e348fc1292ab0fc8cb536bf99aa",
+      "splunk_health/default/data/ui/views/splunk_health.xml": "83007b44ecbeca8f171ea7f3f9d8bb37d78e646276f665d3642bbda41e7e112b",
+      "splunk_health/default/savedsearches.conf": "44059c5027cc1b89e12312bd738f40e3676208446a5b41ee41cf6f2ab6323f8a",
+      "splunk_health/default/visualizations.conf": "fca118d9f91f9226c80b5210ac9262908d1015fcd48f8f14d57b04d91a1d7411",
+      "splunk_health/metadata/default.meta": "68e8ec9ce33bb40c647d3a467137abda69ed617206b5c969f9ea838ab047696a",
+      "splunk_health/static/appIcon.png": "a73cc3898cc3e87d9d0c7d3faad5fb99a3a80c71b40a07000c397f5f2db92224",
+      "splunk_health/static/appIconAlt.png": "a73cc3898cc3e87d9d0c7d3faad5fb99a3a80c71b40a07000c397f5f2db92224",
+      "splunk_health/static/appIconAlt_2x.png": "4b18a892e505545f8890861c873d253a305a5c5917f6ee6aca36a6aa34447a13",
+      "splunk_health/static/appIcon_2x.png": "4b18a892e505545f8890861c873d253a305a5c5917f6ee6aca36a6aa34447a13"
+    },
+    "source_path": "splunk_health",
+    "tree_sha256": "016ebc4eb95a78016ece6b8f1c78e461dad51fdffc9846626d8a622d4feae128",
+    "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/splunk_health"
+  },
+  "definition": {
+    "package_path": "splunk_dashboard_studio/template_data/rcastley_splunk_health.json",
+    "sha256": "0371e79ed06eb10ee6298d6e54f32d5a99b744e44d812400845ad141de72febd",
+    "source_path": "splunk_health/default/data/ui/views/splunk_health.xml"
+  },
+  "harnesses": [
+    {
+      "name": "forwarder_heatmap",
+      "sha256": "0aa3fc6aec918c9d0b27580387b3474bdfed2468327d190d6af5644122ecfabd",
+      "source_path": "examples/forwarder_heatmap/appserver/static/visualizations/forwarder_heatmap/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/forwarder_heatmap.json"
+    },
+    {
+      "name": "index_storage",
+      "sha256": "5362fcf86558d226c7fa2c449500c9b20e122c520630aee162e88aa558f43535",
+      "source_path": "examples/index_storage/appserver/static/visualizations/index_storage/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/index_storage.json"
+    },
+    {
+      "name": "indexing_pipeline_flow",
+      "sha256": "851fd40d8ddf89d6a638f8b70a14116d0cc2a3a1a4a69ab395e3c7fea8ced97f",
+      "source_path": "examples/indexing_pipeline_flow/appserver/static/visualizations/indexing_pipeline_flow/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/indexing_pipeline_flow.json"
+    },
+    {
+      "name": "license_gauge",
+      "sha256": "24ddda9c4aa973f9fc3067b73ea45a0404856b97a5b27906edcd3a51b9ad6525",
+      "source_path": "examples/license_gauge/appserver/static/visualizations/license_gauge/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/license_gauge.json"
+    },
+    {
+      "name": "resource_gauge",
+      "sha256": "900ce66d1ec7142350a9c7b7d9c4398f7582316a293b321ea35f6d01bcf894d0",
+      "source_path": "examples/resource_gauge/appserver/static/visualizations/resource_gauge/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/resource_gauge.json"
+    },
+    {
+      "name": "scheduler_health",
+      "sha256": "eaa51041411019409420ce4412805885d574487530acc0058bbfbc88364e0551",
+      "source_path": "examples/scheduler_health/appserver/static/visualizations/scheduler_health/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/scheduler_health.json"
+    },
+    {
+      "name": "search_activity",
+      "sha256": "941e9181e8c5f627bb6ba70b4b52d486016c049e6a451bcc854d93abd4ec1bd0",
+      "source_path": "examples/search_activity/appserver/static/visualizations/search_activity/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/search_activity.json"
+    },
+    {
+      "name": "splunk_status_board",
+      "sha256": "23d6aacdf19349acd9cc1386346b746455efc30ae2f6c16565461fb48d22cbd0",
+      "source_path": "examples/splunk_status_board/appserver/static/visualizations/splunk_status_board/harness.json",
+      "vendor_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/harness/splunk_status_board.json"
+    }
+  ],
+  "license": "Apache-2.0",
+  "license_path": "integration/splunk-visual/vendor/rcastley-splunk-custom-visualizations/LICENSE",
+  "license_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+  "repository": "https://github.com/rcastley/splunk-custom-visualizations",
+  "revision": "7424755c461712022367c3fa081fd7e0edc91001",
+  "schema_version": "splunk-source-template-lock/v1"
+}

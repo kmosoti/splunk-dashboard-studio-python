@@ -113,6 +113,12 @@ def test_catalog_bundle_hashes_the_canonical_definition() -> None:
     assert bundle.manifest.saved_searches[0].ownership == "external"
 
 
+def test_service_map_provenance_includes_link_and_node_sources() -> None:
+    bundle = build_catalog_bundle("microservice_service_map", "10.4.0")
+    panel = next(item for item in bundle.manifest.panels if item.panel_id == "viz_dependency_map")
+    assert panel.data_source_ids == ("ds_dependency_map", "ds_dependency_map_nodes")
+
+
 def test_catalog_cli_lists_and_builds_artifacts(
     capsys: pytest.CaptureFixture[str],
     tmp_path: Path,
