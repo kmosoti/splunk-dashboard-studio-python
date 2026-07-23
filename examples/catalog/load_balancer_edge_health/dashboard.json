@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_backend_failures": {
+      "name": "Backend target failures",
+      "options": {
+        "query": "index=otel_logs service.name=load-balancer http.response.status_code>=500 | stats count AS failures by peer.service | sort - failures | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_edge_errors": {
+      "name": "4xx and 5xx rate",
+      "options": {
+        "query": "index=otel_logs service.name=load-balancer | timechart span=5m count(eval(http.response.status_code>=400 AND http.response.status_code<500)) AS 4xx count(eval(http.response.status_code>=500)) AS 5xx"
+      },
+      "type": "ds.search"
+    },
+    "ds_edge_latency": {
+      "name": "p95 and p99 latency",
+      "options": {
+        "query": "index=otel_logs service.name=load-balancer | timechart span=5m perc95(duration_ms) AS p95_ms perc99(duration_ms) AS p99_ms"
+      },
+      "type": "ds.search"
+    },
+    "ds_edge_saturation": {
+      "name": "Capacity saturation",
+      "options": {
+        "query": "| mstats max(_value) AS saturation WHERE index=otel_metrics metric_name=\"http.server.active_requests\" BY service.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_edge_traffic": {
+      "name": "Request traffic",
+      "options": {
+        "query": "index=otel_logs service.name=load-balancer | timechart span=5m count AS requests"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Four Golden Signals for ingress and backend target health.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_edge_traffic",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_edge_errors",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_edge_latency",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_backend_failures",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_edge_saturation",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Load Balancer Edge Health",
+  "version": "2",
+  "visualizations": {
+    "viz_backend_failures": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_backend_failures"
+      },
+      "description": "Rank unhealthy backend services.",
+      "options": {},
+      "title": "Backend target failures",
+      "type": "splunk.table"
+    },
+    "viz_edge_errors": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_edge_errors"
+      },
+      "description": "Separate client and server failure rates.",
+      "options": {},
+      "title": "4xx and 5xx rate",
+      "type": "splunk.line"
+    },
+    "viz_edge_latency": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_edge_latency"
+      },
+      "description": "Track tail latency at the edge.",
+      "options": {},
+      "title": "p95 and p99 latency",
+      "type": "splunk.line"
+    },
+    "viz_edge_saturation": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_edge_saturation"
+      },
+      "description": "Show active connection pressure.",
+      "options": {},
+      "title": "Capacity saturation",
+      "type": "splunk.line"
+    },
+    "viz_edge_traffic": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_edge_traffic"
+      },
+      "description": "Track ingress demand over time.",
+      "options": {},
+      "title": "Request traffic",
+      "type": "splunk.line"
+    }
+  }
+}

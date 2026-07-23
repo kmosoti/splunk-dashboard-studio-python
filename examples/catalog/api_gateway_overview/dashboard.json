@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_authentication_failures": {
+      "name": "Authentication failures",
+      "options": {
+        "query": "index=otel_logs service.name=api-gateway event.name=auth.failure | timechart span=5m count AS failures by http.route"
+      },
+      "type": "ds.search"
+    },
+    "ds_latency_distribution": {
+      "name": "Latency distribution",
+      "options": {
+        "query": "index=otel_traces service.name=api-gateway | stats perc50(duration_ms) AS p50_ms perc95(duration_ms) AS p95_ms perc99(duration_ms) AS p99_ms by http.route"
+      },
+      "type": "ds.search"
+    },
+    "ds_route_red": {
+      "name": "Route RED summary",
+      "options": {
+        "query": "index=otel_logs service.name=api-gateway | stats count AS requests count(eval(http.response.status_code>=500)) AS errors perc95(duration_ms) AS p95_ms by http.route"
+      },
+      "type": "ds.search"
+    },
+    "ds_throttling": {
+      "name": "Throttled requests",
+      "options": {
+        "query": "index=otel_logs service.name=api-gateway http.response.status_code=429 | timechart span=5m count AS throttled by http.route"
+      },
+      "type": "ds.search"
+    },
+    "ds_top_tenants": {
+      "name": "Top tenants",
+      "options": {
+        "query": "index=otel_logs service.name=api-gateway tenant.id=* | stats count AS requests by tenant.id | sort - requests | head 20"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Route and tenant RED signals with authentication and throttling health.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_route_red",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_authentication_failures",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_throttling",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_top_tenants",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_latency_distribution",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "API Gateway Overview",
+  "version": "2",
+  "visualizations": {
+    "viz_authentication_failures": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_authentication_failures"
+      },
+      "description": "Track rejected authentication events by route.",
+      "options": {},
+      "title": "Authentication failures",
+      "type": "splunk.line"
+    },
+    "viz_latency_distribution": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_latency_distribution"
+      },
+      "description": "Inspect route-level latency percentiles.",
+      "options": {},
+      "title": "Latency distribution",
+      "type": "splunk.table"
+    },
+    "viz_route_red": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_route_red"
+      },
+      "description": "Compare request volume, failures, and latency by route.",
+      "options": {},
+      "title": "Route RED summary",
+      "type": "splunk.table"
+    },
+    "viz_throttling": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_throttling"
+      },
+      "description": "Detect routes constrained by rate limits.",
+      "options": {},
+      "title": "Throttled requests",
+      "type": "splunk.line"
+    },
+    "viz_top_tenants": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_top_tenants"
+      },
+      "description": "Rank tenant traffic without exposing raw user identifiers.",
+      "options": {},
+      "title": "Top tenants",
+      "type": "splunk.table"
+    }
+  }
+}

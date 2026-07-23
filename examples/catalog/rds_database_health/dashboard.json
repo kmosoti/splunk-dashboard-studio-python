@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_database_connections": {
+      "name": "Connection utilization",
+      "options": {
+        "query": "| mstats max(_value) AS connections WHERE index=otel_metrics metric_name=\"db.client.connections.usage\" BY db.system.name db.namespace span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_database_latency": {
+      "name": "Operation p95 latency",
+      "options": {
+        "query": "index=otel_traces db.system.name=* | timechart span=5m perc95(duration_ms) AS p95_ms by db.namespace"
+      },
+      "type": "ds.search"
+    },
+    "ds_database_locks": {
+      "name": "Lock pressure",
+      "options": {
+        "query": "| mstats max(_value) AS lock_waits WHERE index=otel_metrics metric_name=\"db.lock.waits\" BY db.system.name db.namespace span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_database_storage": {
+      "name": "Storage pressure",
+      "options": {
+        "query": "| mstats min(_value) AS remaining WHERE index=otel_metrics metric_name=\"db.storage.remaining\" BY db.system.name db.namespace span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_replication_lag": {
+      "name": "Replication lag",
+      "options": {
+        "query": "| mstats max(_value) AS lag_seconds WHERE index=otel_metrics metric_name=\"db.replication.lag\" BY db.system.name db.namespace span=5m"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Database latency, concurrency, errors, and storage pressure.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_database_latency",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_database_connections",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_database_locks",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_database_storage",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_replication_lag",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "RDS and Database Health",
+  "version": "2",
+  "visualizations": {
+    "viz_database_connections": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_database_connections"
+      },
+      "description": "Find databases approaching connection limits.",
+      "options": {},
+      "title": "Connection utilization",
+      "type": "splunk.line"
+    },
+    "viz_database_latency": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_database_latency"
+      },
+      "description": "Track slow database operations by namespace.",
+      "options": {},
+      "title": "Operation p95 latency",
+      "type": "splunk.line"
+    },
+    "viz_database_locks": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_database_locks"
+      },
+      "description": "Surface lock waits and contention.",
+      "options": {},
+      "title": "Lock pressure",
+      "type": "splunk.line"
+    },
+    "viz_database_storage": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_database_storage"
+      },
+      "description": "Track remaining storage and write pressure.",
+      "options": {},
+      "title": "Storage pressure",
+      "type": "splunk.line"
+    },
+    "viz_replication_lag": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_replication_lag"
+      },
+      "description": "Detect replicas falling behind primary databases.",
+      "options": {},
+      "title": "Replication lag",
+      "type": "splunk.line"
+    }
+  }
+}

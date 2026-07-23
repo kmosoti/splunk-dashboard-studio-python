@@ -1,0 +1,128 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3777,
+  "definition_sha256": "d428c22d29130cefc79c1cac6dad3d2def073fca75539e3e0a2392199b65431d",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "business_journey_slo",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_journey_success"
+      ],
+      "drilldown_signals": [
+        "trace"
+      ],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_journey_success",
+      "purpose": "Measure whether users complete the intended journey.",
+      "required_fields": [
+        "business.journey.name",
+        "business.outcome"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_journey_latency"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_journey_latency",
+      "purpose": "Track customer-perceived journey duration.",
+      "required_fields": [
+        "business.journey.name",
+        "duration_ms"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_journey_abandonment"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_journey_abandonment",
+      "purpose": "Measure journeys that start but do not complete.",
+      "required_fields": [
+        "business.journey.name",
+        "business.outcome"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_business_freshness"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_business_freshness",
+      "purpose": "Detect stale or interrupted journey telemetry.",
+      "required_fields": [
+        "business.journey.name"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_error_budget_burn"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_error_budget_burn",
+      "purpose": "Compare observed journey failures with the declared SLO budget.",
+      "required_fields": [
+        "business.journey.name",
+        "business.outcome"
+      ],
+      "signals": [
+        "event"
+      ]
+    }
+  ],
+  "saved_searches": [
+    {
+      "ownership": "external",
+      "purpose": "Precompute shared journey SLIs and error-budget windows.",
+      "rationale": "Multi-window burn rates should be consistent across viewers and alerts.",
+      "recommended_schedule": "*/5 * * * *",
+      "reference": "Platform - Business Journey SLO Rollup",
+      "source_indexes": [
+        "business_events"
+      ]
+    }
+  ],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

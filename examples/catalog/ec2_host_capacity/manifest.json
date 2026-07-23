@@ -1,0 +1,116 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3360,
+  "definition_sha256": "6f0b095156c743a830fc08dee8c8ac55fc9187b2f1086b04b19f589d75b30e5e",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "ec2_host_capacity",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_host_cpu"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_host_cpu",
+      "purpose": "Track sustained host CPU utilization.",
+      "required_fields": [
+        "metric_name",
+        "host.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_host_memory"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_host_memory",
+      "purpose": "Find hosts with memory pressure.",
+      "required_fields": [
+        "metric_name",
+        "host.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_host_disk"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_host_disk",
+      "purpose": "Identify full or rapidly filling filesystems.",
+      "required_fields": [
+        "metric_name",
+        "host.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_host_network_load"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_host_network_load",
+      "purpose": "Compare network throughput with system load.",
+      "required_fields": [
+        "metric_name",
+        "host.name"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_host_errors"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_host_errors",
+      "purpose": "Rank hosts by operating-system and agent errors.",
+      "required_fields": [
+        "host.name",
+        "event.name"
+      ],
+      "signals": [
+        "log"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

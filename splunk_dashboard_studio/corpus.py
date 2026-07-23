@@ -9,6 +9,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, JsonValue
 
+from splunk_dashboard_studio.catalog import build_catalog_dashboard, catalog_entries
 from splunk_dashboard_studio.generation import DashboardBuilder
 from splunk_dashboard_studio.version import TargetPlatform
 
@@ -60,6 +61,23 @@ def generate_corpus(target: TargetPlatform | str) -> tuple[CorpusCase, ...]:
             definition=base,
         )
     ]
+
+    for entry in catalog_entries():
+        if platform.version < entry.minimum_target:
+            continue
+        cases.append(
+            CorpusCase(
+                case_id=f"catalog-{entry.example_id}",
+                target=platform,
+                expected_native="valid",
+                expected_npm="valid",
+                tags=("positive", "catalog", *entry.tags),
+                definition=build_catalog_dashboard(
+                    entry.example_id,
+                    platform,
+                ).as_json_value(),
+            )
+        )
 
     chain = copy.deepcopy(base)
     chain["dataSources"]["ds_base"] = {

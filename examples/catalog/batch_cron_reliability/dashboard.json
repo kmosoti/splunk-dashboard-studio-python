@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_job_backlog": {
+      "name": "Queue backlog",
+      "options": {
+        "query": "index=batch_events queue.backlog=* | timechart span=5m max(queue.backlog) AS backlog by job.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_job_duration": {
+      "name": "Job duration",
+      "options": {
+        "query": "index=batch_events job.name=* | timechart span=1h perc95(duration_ms) AS p95_ms by job.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_job_failures": {
+      "name": "Job failures",
+      "options": {
+        "query": "index=batch_events job.status=failure | stats count AS failures by job.name | sort - failures | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_job_freshness": {
+      "name": "Job freshness",
+      "options": {
+        "query": "index=batch_events job.status=success | stats latest(_time) AS last_success by job.name | eval freshness_seconds=now()-last_success | sort - freshness_seconds"
+      },
+      "type": "ds.search"
+    },
+    "ds_schedule_adherence": {
+      "name": "Schedule adherence",
+      "options": {
+        "query": "index=batch_events job.name=* | eval delay_seconds=_time-scheduled_time | stats perc95(delay_seconds) AS p95_delay_seconds by job.name"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Schedule adherence, duration, backlog, failures, and freshness.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_schedule_adherence",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_job_duration",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_job_backlog",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_job_failures",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_job_freshness",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Batch and Cron Reliability",
+  "version": "2",
+  "visualizations": {
+    "viz_job_backlog": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_job_backlog"
+      },
+      "description": "Detect pending work accumulation.",
+      "options": {},
+      "title": "Queue backlog",
+      "type": "splunk.line"
+    },
+    "viz_job_duration": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_job_duration"
+      },
+      "description": "Track duration regressions by job.",
+      "options": {},
+      "title": "Job duration",
+      "type": "splunk.line"
+    },
+    "viz_job_failures": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_job_failures"
+      },
+      "description": "Rank recurring job failures.",
+      "options": {},
+      "title": "Job failures",
+      "type": "splunk.table"
+    },
+    "viz_job_freshness": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_job_freshness"
+      },
+      "description": "Show elapsed time since each job last succeeded.",
+      "options": {},
+      "title": "Job freshness",
+      "type": "splunk.table"
+    },
+    "viz_schedule_adherence": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_schedule_adherence"
+      },
+      "description": "Find jobs that start materially after their schedules.",
+      "options": {},
+      "title": "Schedule adherence",
+      "type": "splunk.table"
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3491,
+  "definition_sha256": "0d595cfa3e596b3fb6dc8cc4a9afefefd21aeb561d71ab602ea293fc057d81f5",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "rds_database_health",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_database_latency"
+      ],
+      "drilldown_signals": [
+        "log"
+      ],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_database_latency",
+      "purpose": "Track slow database operations by namespace.",
+      "required_fields": [
+        "db.system.name",
+        "db.namespace",
+        "duration_ms"
+      ],
+      "signals": [
+        "trace"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_database_connections"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_database_connections",
+      "purpose": "Find databases approaching connection limits.",
+      "required_fields": [
+        "metric_name",
+        "db.system.name",
+        "db.namespace"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_database_locks"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_database_locks",
+      "purpose": "Surface lock waits and contention.",
+      "required_fields": [
+        "metric_name",
+        "db.system.name",
+        "db.namespace"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_database_storage"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_database_storage",
+      "purpose": "Track remaining storage and write pressure.",
+      "required_fields": [
+        "metric_name",
+        "db.system.name",
+        "db.namespace"
+      ],
+      "signals": [
+        "metric"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_replication_lag"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "use"
+      ],
+      "panel_id": "viz_replication_lag",
+      "purpose": "Detect replicas falling behind primary databases.",
+      "required_fields": [
+        "metric_name",
+        "db.system.name",
+        "db.namespace"
+      ],
+      "signals": [
+        "metric"
+      ]
+    }
+  ],
+  "saved_searches": [
+    {
+      "ownership": "external",
+      "purpose": "Precompute shared database health aggregates for high-viewer dashboards.",
+      "rationale": "Scheduled aggregation avoids one expensive trace query per viewer.",
+      "recommended_schedule": "*/5 * * * *",
+      "reference": "Platform - Database Health Rollup",
+      "source_indexes": [
+        "otel_metrics",
+        "otel_traces"
+      ]
+    }
+  ],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

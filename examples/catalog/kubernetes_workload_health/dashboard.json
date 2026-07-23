@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_failing_pods": {
+      "name": "Top failing pods",
+      "options": {
+        "query": "index=otel_logs k8s.pod.name=* http.response.status_code>=500 | stats count AS failures by k8s.namespace.name k8s.pod.name | sort - failures | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_pod_restarts": {
+      "name": "Pod restarts",
+      "options": {
+        "query": "| mstats sum(_value) AS restarts WHERE index=otel_metrics metric_name=\"k8s.pod.restart.count\" BY k8s.namespace.name k8s.pod.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_resource_saturation": {
+      "name": "CPU and memory saturation",
+      "options": {
+        "query": "| mstats max(_value) AS saturation WHERE index=otel_metrics metric_name IN (\"k8s.container.cpu.utilization\",\"k8s.container.memory.utilization\") BY metric_name k8s.pod.name span=5m"
+      },
+      "type": "ds.search"
+    },
+    "ds_workload_error_rate": {
+      "name": "Workload error rate",
+      "options": {
+        "query": "index=otel_logs k8s.namespace.name=* | stats count AS requests count(eval(http.response.status_code>=500)) AS errors by k8s.namespace.name k8s.workload.name | eval value=round(errors*100/requests,2)"
+      },
+      "type": "ds.search"
+    },
+    "ds_workload_p95_latency": {
+      "name": "Workload p95 latency",
+      "options": {
+        "query": "index=otel_traces k8s.namespace.name=* | timechart span=5m perc95(duration_ms) AS p95_ms by k8s.workload.name"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Namespace and workload RED signals with pod-level resource saturation.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_workload_error_rate",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_workload_p95_latency",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_pod_restarts",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_resource_saturation",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_failing_pods",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Kubernetes Workload Health",
+  "version": "2",
+  "visualizations": {
+    "viz_failing_pods": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_failing_pods"
+      },
+      "description": "Rank pods emitting the most error events.",
+      "options": {},
+      "title": "Top failing pods",
+      "type": "splunk.table"
+    },
+    "viz_pod_restarts": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_pod_restarts"
+      },
+      "description": "Surface unstable pods and workload churn.",
+      "options": {},
+      "title": "Pod restarts",
+      "type": "splunk.line"
+    },
+    "viz_resource_saturation": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_resource_saturation"
+      },
+      "description": "Locate pods approaching resource limits.",
+      "options": {},
+      "title": "CPU and memory saturation",
+      "type": "splunk.line"
+    },
+    "viz_workload_error_rate": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_workload_error_rate"
+      },
+      "description": "Identify workloads whose request failures are rising.",
+      "options": {},
+      "title": "Workload error rate",
+      "type": "splunk.singlevalue"
+    },
+    "viz_workload_p95_latency": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_workload_p95_latency"
+      },
+      "description": "Track user-visible workload latency over time.",
+      "options": {},
+      "title": "Workload p95 latency",
+      "type": "splunk.line"
+    }
+  }
+}

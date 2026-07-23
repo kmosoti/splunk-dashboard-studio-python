@@ -1,0 +1,130 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3593,
+  "definition_sha256": "3f238d5f7b9655b69ed3ddc9d3bc7d7a90d2662b003eb089b9fc449feadd43c5",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "cicd_delivery_health",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_delivery_lead_time"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_delivery_lead_time",
+      "purpose": "Track time from accepted change to production deployment.",
+      "required_fields": [
+        "event.name",
+        "duration_ms"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_pipeline_failures"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_pipeline_failures",
+      "purpose": "Compare failed and total pipeline runs.",
+      "required_fields": [
+        "cicd.pipeline.name",
+        "cicd.status"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_flaky_jobs"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_flaky_jobs",
+      "purpose": "Rank jobs alternating between pass and fail outcomes.",
+      "required_fields": [
+        "cicd.job.name",
+        "cicd.status"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_pipeline_queue_time"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_pipeline_queue_time",
+      "purpose": "Track delivery-system saturation before jobs start.",
+      "required_fields": [
+        "event.name",
+        "duration_ms",
+        "cicd.pipeline.name"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_deployment_rollbacks"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_deployment_rollbacks",
+      "purpose": "Correlate rollback frequency with services and environments.",
+      "required_fields": [
+        "change.type",
+        "service.name",
+        "deployment.environment.name"
+      ],
+      "signals": [
+        "event"
+      ]
+    }
+  ],
+  "saved_searches": [
+    {
+      "ownership": "external",
+      "purpose": "Precompute daily delivery and change-failure indicators.",
+      "rationale": "Cross-event lead-time calculations are expensive and widely shared.",
+      "recommended_schedule": "15 * * * *",
+      "reference": "Platform - CI CD Delivery Rollup",
+      "source_indexes": [
+        "cicd_events",
+        "platform_events"
+      ]
+    }
+  ],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

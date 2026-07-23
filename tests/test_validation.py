@@ -85,7 +85,7 @@ def test_versioned_feature_boundaries(
     elif mutation == "custom":
         payload["visualizations"]["viz_events"]["type"] = "viz.example.custom"
     else:
-        payload["visualizations"]["viz_events"]["type"] = "splunk.networkgraph"
+        payload["visualizations"]["viz_events"]["type"] = "splunk.networkGraph"
 
     older_report = validate_dashboard(payload, target=older)
     issue = next(issue for issue in older_report.issues if issue.code == "feature_not_available")

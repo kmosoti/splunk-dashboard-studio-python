@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_delivery_lead_time": {
+      "name": "Delivery lead time",
+      "options": {
+        "query": "index=cicd_events event.name=deployment.completed | timechart span=1d perc95(duration_ms) AS p95_lead_time_ms"
+      },
+      "type": "ds.search"
+    },
+    "ds_deployment_rollbacks": {
+      "name": "Deployment rollbacks",
+      "options": {
+        "query": "index=platform_events change.type=rollback | stats count AS rollbacks by service.name deployment.environment.name | sort - rollbacks"
+      },
+      "type": "ds.search"
+    },
+    "ds_flaky_jobs": {
+      "name": "Flaky jobs",
+      "options": {
+        "query": "index=cicd_events cicd.job.name=* | stats dc(cicd.status) AS outcomes count(eval(cicd.status=\"failure\")) AS failures by cicd.job.name | where outcomes>1 | sort - failures | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_pipeline_failures": {
+      "name": "Pipeline failure rate",
+      "options": {
+        "query": "index=cicd_events cicd.pipeline.name=* | timechart span=1h count AS runs count(eval(cicd.status=\"failure\")) AS failures by cicd.pipeline.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_pipeline_queue_time": {
+      "name": "Queue time",
+      "options": {
+        "query": "index=cicd_events event.name=job.started | timechart span=1h perc95(duration_ms) AS p95_queue_ms by cicd.pipeline.name"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Delivery lead time, reliability, queueing, flaky jobs, and rollback signals.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_delivery_lead_time",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_pipeline_failures",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_flaky_jobs",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_pipeline_queue_time",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_deployment_rollbacks",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "CI/CD Delivery Health",
+  "version": "2",
+  "visualizations": {
+    "viz_delivery_lead_time": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_delivery_lead_time"
+      },
+      "description": "Track time from accepted change to production deployment.",
+      "options": {},
+      "title": "Delivery lead time",
+      "type": "splunk.line"
+    },
+    "viz_deployment_rollbacks": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_deployment_rollbacks"
+      },
+      "description": "Correlate rollback frequency with services and environments.",
+      "options": {},
+      "title": "Deployment rollbacks",
+      "type": "splunk.table"
+    },
+    "viz_flaky_jobs": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_flaky_jobs"
+      },
+      "description": "Rank jobs alternating between pass and fail outcomes.",
+      "options": {},
+      "title": "Flaky jobs",
+      "type": "splunk.table"
+    },
+    "viz_pipeline_failures": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_pipeline_failures"
+      },
+      "description": "Compare failed and total pipeline runs.",
+      "options": {},
+      "title": "Pipeline failure rate",
+      "type": "splunk.line"
+    },
+    "viz_pipeline_queue_time": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_pipeline_queue_time"
+      },
+      "description": "Track delivery-system saturation before jobs start.",
+      "options": {},
+      "title": "Queue time",
+      "type": "splunk.line"
+    }
+  }
+}

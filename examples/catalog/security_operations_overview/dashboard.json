@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_auth_failures": {
+      "name": "Authentication failures",
+      "options": {
+        "query": "index=security_events event.name=authentication.failure | timechart span=5m count AS failures by security.severity"
+      },
+      "type": "ds.search"
+    },
+    "ds_high_risk_events": {
+      "name": "High-risk events",
+      "options": {
+        "query": "index=security_events risk.score>=70 | stats count AS events max(risk.score) AS risk by event.name security.severity | sort - risk | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_ingestion_lag": {
+      "name": "Ingestion lag",
+      "options": {
+        "query": "index=security_events ingest_lag_seconds=* | timechart span=5m perc95(ingest_lag_seconds) AS p95_lag_seconds"
+      },
+      "type": "ds.search"
+    },
+    "ds_noisy_detections": {
+      "name": "Noisy detections",
+      "options": {
+        "query": "index=security_events event.name=detection.triggered | stats count AS triggers by detection.name security.severity | sort - triggers | head 20"
+      },
+      "type": "ds.search"
+    },
+    "ds_security_platform_health": {
+      "name": "Security platform health",
+      "options": {
+        "query": "index=platform_events event.name=security.pipeline.error | stats count AS errors by service.name | sort - errors"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "Authentication failures, risk, noisy detections, and ingestion health.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_auth_failures",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_high_risk_events",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_noisy_detections",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_ingestion_lag",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_security_platform_health",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Security Operations Overview",
+  "version": "2",
+  "visualizations": {
+    "viz_auth_failures": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_auth_failures"
+      },
+      "description": "Track authentication failure volume without exposing user values.",
+      "options": {},
+      "title": "Authentication failures",
+      "type": "splunk.line"
+    },
+    "viz_high_risk_events": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_high_risk_events"
+      },
+      "description": "Rank current high-risk security signals.",
+      "options": {},
+      "title": "High-risk events",
+      "type": "splunk.table"
+    },
+    "viz_ingestion_lag": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_ingestion_lag"
+      },
+      "description": "Detect delayed security telemetry.",
+      "options": {},
+      "title": "Ingestion lag",
+      "type": "splunk.line"
+    },
+    "viz_noisy_detections": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_noisy_detections"
+      },
+      "description": "Find detections producing disproportionate volume.",
+      "options": {},
+      "title": "Noisy detections",
+      "type": "splunk.table"
+    },
+    "viz_security_platform_health": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_security_platform_health"
+      },
+      "description": "Track collection and detection pipeline errors.",
+      "options": {},
+      "title": "Security platform health",
+      "type": "splunk.table"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3521,
+  "definition_sha256": "dcdd9cf4cb415d22d2475de2ddc2ef7a8ec340dcd5556a1f5cea44d9916d3862",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "security_operations_overview",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_auth_failures"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_auth_failures",
+      "purpose": "Track authentication failure volume without exposing user values.",
+      "required_fields": [
+        "event.name",
+        "detection.name",
+        "security.severity"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_high_risk_events"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_high_risk_events",
+      "purpose": "Rank current high-risk security signals.",
+      "required_fields": [
+        "risk.score",
+        "event.name",
+        "security.severity"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_noisy_detections"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_noisy_detections",
+      "purpose": "Find detections producing disproportionate volume.",
+      "required_fields": [
+        "event.name",
+        "security.severity"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_ingestion_lag"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_ingestion_lag",
+      "purpose": "Detect delayed security telemetry.",
+      "required_fields": [
+        "ingest_lag_seconds"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_security_platform_health"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "four_golden_signals"
+      ],
+      "panel_id": "viz_security_platform_health",
+      "purpose": "Track collection and detection pipeline errors.",
+      "required_fields": [
+        "event.name",
+        "service.name"
+      ],
+      "signals": [
+        "event"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

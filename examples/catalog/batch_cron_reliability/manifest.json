@@ -1,0 +1,116 @@
+{
+  "assumptions": [
+    "Logical index names are mapped by the deploying Splunk Enterprise app.",
+    "Official NPM validation is performed in CI and is not claimed by this generated file.",
+    "Live Splunk REST ingestion and readback remain deferred."
+  ],
+  "canonical_json_bytes": 3327,
+  "definition_sha256": "56f3b8032e7f92b5c66a21180e730aefebc27347963ddfcb2e69e38dd204bd53",
+  "engine_evidence": "temporal_surrogate",
+  "example_id": "batch_cron_reliability",
+  "generator_version": "0.2.0",
+  "minimum_target": "9.4.3",
+  "native_validation": "valid",
+  "official_engine_id": "dashboard-27.5.1",
+  "official_engine_version": "27.5.1",
+  "official_validation": "not_run",
+  "panels": [
+    {
+      "data_source_ids": [
+        "ds_schedule_adherence"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_schedule_adherence",
+      "purpose": "Find jobs that start materially after their schedules.",
+      "required_fields": [
+        "job.name",
+        "scheduled_time"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_job_duration"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_job_duration",
+      "purpose": "Track duration regressions by job.",
+      "required_fields": [
+        "job.name",
+        "duration_ms"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_job_backlog"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_job_backlog",
+      "purpose": "Detect pending work accumulation.",
+      "required_fields": [
+        "job.name",
+        "queue.backlog"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_job_failures"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "red"
+      ],
+      "panel_id": "viz_job_failures",
+      "purpose": "Rank recurring job failures.",
+      "required_fields": [
+        "job.name",
+        "job.status"
+      ],
+      "signals": [
+        "event"
+      ]
+    },
+    {
+      "data_source_ids": [
+        "ds_job_freshness"
+      ],
+      "drilldown_signals": [],
+      "frameworks": [
+        "sli_slo"
+      ],
+      "panel_id": "viz_job_freshness",
+      "purpose": "Show elapsed time since each job last succeeded.",
+      "required_fields": [
+        "job.name",
+        "job.status"
+      ],
+      "signals": [
+        "event"
+      ]
+    }
+  ],
+  "saved_searches": [],
+  "schema_version": "dashboard-evidence/v1",
+  "target": {
+    "product": "splunk-enterprise",
+    "version": "9.4.3"
+  },
+  "telemetry_contract": "portable-observability-v1"
+}

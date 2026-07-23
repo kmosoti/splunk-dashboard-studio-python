@@ -1,0 +1,204 @@
+{
+  "applicationProperties": {
+    "collapseNavigation": false,
+    "downsampleVisualizations": true
+  },
+  "dataSources": {
+    "ds_business_freshness": {
+      "name": "Business event freshness",
+      "options": {
+        "query": "index=business_events business.journey.name=* | stats latest(_time) AS latest_event by business.journey.name | eval freshness_seconds=now()-latest_event | sort - freshness_seconds"
+      },
+      "type": "ds.search"
+    },
+    "ds_error_budget_burn": {
+      "name": "Error-budget burn",
+      "options": {
+        "query": "index=business_events business.journey.name=* | bin _time span=5m | stats count AS attempts count(eval(business.outcome!=\"success\")) AS failures by _time business.journey.name | eval burn_rate=(failures/attempts)/0.001"
+      },
+      "type": "ds.search"
+    },
+    "ds_journey_abandonment": {
+      "name": "Journey abandonment",
+      "options": {
+        "query": "index=business_events business.outcome=abandoned | timechart span=5m count AS abandoned by business.journey.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_journey_latency": {
+      "name": "Journey p95 latency",
+      "options": {
+        "query": "index=business_events business.journey.name=* | timechart span=5m perc95(duration_ms) AS p95_ms by business.journey.name"
+      },
+      "type": "ds.search"
+    },
+    "ds_journey_success": {
+      "name": "Journey success rate",
+      "options": {
+        "query": "index=business_events business.journey.name=* | stats count AS attempts count(eval(business.outcome=\"success\")) AS successes by business.journey.name | eval value=round(successes*100/attempts,2)"
+      },
+      "type": "ds.search"
+    }
+  },
+  "defaults": {
+    "dataSources": {
+      "ds.search": {
+        "options": {
+          "queryParameters": {
+            "earliest": "$global_time.earliest$",
+            "latest": "$global_time.latest$"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "global": {
+        "showProgressBar": true
+      }
+    }
+  },
+  "description": "User-journey success, latency, abandonment, freshness, and error-budget burn.",
+  "expressions": {},
+  "inputs": {
+    "input_global_time": {
+      "context": {},
+      "dataSources": {},
+      "options": {
+        "defaultValue": "-24h@h,now",
+        "token": "global_time"
+      },
+      "title": "Global Time Range",
+      "type": "input.timerange"
+    }
+  },
+  "layout": {
+    "globalInputs": [
+      "input_global_time"
+    ],
+    "layoutDefinitions": {
+      "layout_main": {
+        "options": {
+          "height": 860,
+          "width": 1440
+        },
+        "structure": [
+          {
+            "item": "viz_journey_success",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_journey_latency",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 20
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_journey_abandonment",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_business_freshness",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 730,
+              "y": 300
+            },
+            "type": "block"
+          },
+          {
+            "item": "viz_error_budget_burn",
+            "position": {
+              "h": 260,
+              "w": 690,
+              "x": 20,
+              "y": 580
+            },
+            "type": "block"
+          }
+        ],
+        "type": "absolute"
+      }
+    },
+    "options": {},
+    "tabs": {
+      "items": [
+        {
+          "label": "Overview",
+          "layoutId": "layout_main"
+        }
+      ],
+      "options": {}
+    }
+  },
+  "title": "Business Journey and SLO",
+  "version": "2",
+  "visualizations": {
+    "viz_business_freshness": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_business_freshness"
+      },
+      "description": "Detect stale or interrupted journey telemetry.",
+      "options": {},
+      "title": "Business event freshness",
+      "type": "splunk.table"
+    },
+    "viz_error_budget_burn": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_error_budget_burn"
+      },
+      "description": "Compare observed journey failures with the declared SLO budget.",
+      "options": {},
+      "title": "Error-budget burn",
+      "type": "splunk.line"
+    },
+    "viz_journey_abandonment": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_journey_abandonment"
+      },
+      "description": "Measure journeys that start but do not complete.",
+      "options": {},
+      "title": "Journey abandonment",
+      "type": "splunk.line"
+    },
+    "viz_journey_latency": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_journey_latency"
+      },
+      "description": "Track customer-perceived journey duration.",
+      "options": {},
+      "title": "Journey p95 latency",
+      "type": "splunk.line"
+    },
+    "viz_journey_success": {
+      "context": {},
+      "dataSources": {
+        "primary": "ds_journey_success"
+      },
+      "description": "Measure whether users complete the intended journey.",
+      "options": {},
+      "title": "Journey success rate",
+      "type": "splunk.singlevalue"
+    }
+  }
+}
