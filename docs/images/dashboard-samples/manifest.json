@@ -1,0 +1,51 @@
+{
+  "samples": [
+    {
+      "baseline_path": "integration/splunk-visual/baselines/9.4.3/rcastley-splunk-health-portable-full.png",
+      "bytes": 78333,
+      "image_sha256": "4f3508ee4948909178c99e1850351177aaa8adebb6f71a38a41d74101cff5b84",
+      "output_path": "docs/images/dashboard-samples/splunk-health-portable-9.4.png",
+      "sample_id": "splunk_health_portable_94",
+      "target": "9.4.3",
+      "title": "Splunk Health portable port"
+    },
+    {
+      "baseline_path": "integration/splunk-visual/baselines/9.4.3/kubernetes-workload-health-full.png",
+      "bytes": 82681,
+      "image_sha256": "15f9a0f110535d07fd87b32bd57c3df127ceb56220bf02b61e9ef5dc35f33733",
+      "output_path": "docs/images/dashboard-samples/kubernetes-workload-health-9.4.png",
+      "sample_id": "kubernetes_workload_health_94",
+      "target": "9.4.3",
+      "title": "Kubernetes workload health"
+    },
+    {
+      "baseline_path": "integration/splunk-visual/baselines/10.2.0/business-journey-slo-full.png",
+      "bytes": 88297,
+      "image_sha256": "5012afba76e96bb770cb7ed040d20f652693fffd0eea005f1b5f5578b0d4c803",
+      "output_path": "docs/images/dashboard-samples/business-journey-slo-10.2.png",
+      "sample_id": "business_journey_slo_102",
+      "target": "10.2.0",
+      "title": "Business journey SLO"
+    },
+    {
+      "baseline_path": "integration/splunk-visual/baselines/10.4.0/microservice-service-map-full.png",
+      "bytes": 87700,
+      "image_sha256": "8f01705f1961ae7a3033f7eb54fdcb8091fe20a6b97a270a244b7c77a974d1a5",
+      "output_path": "docs/images/dashboard-samples/microservice-service-map-10.4.png",
+      "sample_id": "microservice_service_map_104",
+      "target": "10.4.0",
+      "title": "Microservice service map"
+    },
+    {
+      "baseline_path": "integration/splunk-visual/baselines/10.4.0/rcastley-splunk-health-full.png",
+      "bytes": 249382,
+      "image_sha256": "fc8164329b62dc242f337bbefb7a4cedd754c71f06570786d68c6ee89bddcb53",
+      "output_path": "docs/images/dashboard-samples/splunk-health-custom-10.4.png",
+      "sample_id": "splunk_health_custom_104",
+      "target": "10.4.0",
+      "title": "Splunk Health custom visualization source"
+    }
+  ],
+  "schema_version": "dashboard-sample-gallery/v1",
+  "source": "reviewed live Splunk Enterprise Playwright baselines"
+}

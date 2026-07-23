@@ -27,6 +27,23 @@ The Python runtime supports CPython 3.12, 3.13, and 3.14. Node is never a runtim
 Product versions and NPM package versions are independent axes. A package published near a Splunk
 release is not, by timing alone, proof that the product embeds it.
 
+## Live render evidence
+
+The integration image registry pins exact official `splunk/splunk` manifest digests for 9.4.3,
+10.0.0, 10.2.0, and 10.4.0. Live evidence has a third axis beyond product and NPM versions: the
+Splunk image digest plus Playwright/Chromium baseline. Passing an NPM validator does not prove a
+dashboard renders, and a browser screenshot does not prove which NPM library the product embeds.
+
+For each target, the live lane checks original SPL dispatch, exact synthetic result rows, REST
+publish/readback equivalence, browser state, panel and full-page screenshots, and error/no-data
+rendering. The repository includes reviewed full-suite baselines generated on July 22, 2026 from
+each exact pinned image digest. The machine-readable inventory records the image, architecture,
+browser version, suite, screenshot count, and a digest of the baseline set. Missing or changed
+baselines fail normal local and CI comparison; regeneration is a separate manual review path.
+
+See [live visual regression](visual-regression.md) for the automatic startup flags, fixture
+lifecycle, CI tiers, and evidence contract.
+
 ## 9.4 evidence
 
 The public NPM registry has no `@splunk/dashboard-validation@24.0.0`. Public v24 validation releases

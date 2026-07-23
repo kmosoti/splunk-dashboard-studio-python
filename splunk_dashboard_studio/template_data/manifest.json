@@ -1,0 +1,153 @@
+{
+  "schema_version": "dashboard-source-templates/v1",
+  "templates": [
+    {
+      "definition_file": "rcastley_splunk_health.json",
+      "entry": {
+        "adaptations": [
+          "The Python API normalizes the imported JSON through the stable DashboardDefinition model without changing the source-owned searches, panel types, options, or layout.",
+          "The live regression harness replaces only query strings in a disposable test copy, deriving rows from the upstream harness.json contracts.",
+          "The required splunk_health custom-visualization app is copied only into the disposable integration fixture and is never included in Python distributions."
+        ],
+        "description": "Eight-panel, glass-themed Splunk platform health dashboard using the upstream splunk_health custom visualization app.",
+        "lessons": [
+          {
+            "enforcement": [
+              "Pin the source repository revision and normalized definition SHA-256.",
+              "Reject runtime loading when packaged source content drifts from its lock."
+            ],
+            "lesson_id": "provenance_locked_import",
+            "summary": "Treat external templates as immutable source inputs with exact readback evidence."
+          },
+          {
+            "enforcement": [
+              "Generate fixture rows from the eight upstream harness.json files.",
+              "Keep original SPL validation separate from disposable render-query substitution."
+            ],
+            "lesson_id": "manifest_driven_render_contracts",
+            "summary": "Use visualization-owned field, formatter, no-data, size, and sample-row contracts for QA."
+          },
+          {
+            "enforcement": [
+              "Require Splunk Enterprise 10.2 or later for app-qualified custom visualization types.",
+              "Install the custom app only in eligible disposable live-test targets."
+            ],
+            "lesson_id": "explicit_custom_viz_boundary",
+            "summary": "Custom visualization templates require both a product-version contract and an installed app contract."
+          },
+          {
+            "enforcement": [
+              "Assert each custom panel exposes a visible non-zero canvas within its panel boundary.",
+              "Capture full-dashboard and per-panel screenshots with animations disabled."
+            ],
+            "lesson_id": "canvas_render_invariants",
+            "summary": "Visual QA must cover canvas visibility, sizing, no-data behavior, themes, and screenshot drift."
+          }
+        ],
+        "minimum_target": "10.2.0",
+        "origin": {
+          "attribution": "Splunk Custom Visualizations by Robert Castley, adapted under Apache-2.0.",
+          "definition_sha256": "0371e79ed06eb10ee6298d6e54f32d5a99b744e44d812400845ad141de72febd",
+          "license": "Apache-2.0",
+          "repository": "https://github.com/rcastley/splunk-custom-visualizations",
+          "revision": "7424755c461712022367c3fa081fd7e0edc91001",
+          "source_paths": [
+            "splunk_health/default/data/ui/views/splunk_health.xml",
+            "splunk_health/appserver/static/visualizations/",
+            "examples/splunk_status_board/appserver/static/visualizations/splunk_status_board/harness.json",
+            "examples/license_gauge/appserver/static/visualizations/license_gauge/harness.json",
+            "examples/resource_gauge/appserver/static/visualizations/resource_gauge/harness.json",
+            "examples/indexing_pipeline_flow/appserver/static/visualizations/indexing_pipeline_flow/harness.json",
+            "examples/forwarder_heatmap/appserver/static/visualizations/forwarder_heatmap/harness.json",
+            "examples/search_activity/appserver/static/visualizations/search_activity/harness.json",
+            "examples/scheduler_health/appserver/static/visualizations/scheduler_health/harness.json",
+            "examples/index_storage/appserver/static/visualizations/index_storage/harness.json"
+          ]
+        },
+        "required_apps": [
+          {
+            "app_id": "splunk_health",
+            "install_scope": "operator_or_integration",
+            "repository": "https://github.com/rcastley/splunk-custom-visualizations",
+            "revision": "7424755c461712022367c3fa081fd7e0edc91001"
+          }
+        ],
+        "tags": [
+          "source-derived",
+          "splunk-health",
+          "custom-visualization",
+          "canvas"
+        ],
+        "template_id": "rcastley_splunk_health",
+        "title": "Splunk Health"
+      }
+    },
+    {
+      "definition_file": "rcastley_splunk_health_portable.json",
+      "entry": {
+        "adaptations": [
+          "The eight source-owned SPL searches, data-source refresh settings, panel titles, and 1920 by 1080 layout are preserved.",
+          "Seven app-qualified Canvas panels are replaced with splunk.table and the license gauge is replaced with splunk.singlevalue.",
+          "All custom visualization options are removed so the definition has no splunk_health app dependency.",
+          "The live regression harness continues to derive deterministic rows from the pinned upstream harness.json contracts."
+        ],
+        "description": "App-free Splunk 9-compatible port of the eight-panel Splunk platform health dashboard using built-in Dashboard Studio visualizations.",
+        "lessons": [
+          {
+            "enforcement": [
+              "Pin the source repository revision and normalized adapted-definition SHA-256.",
+              "Regenerate the port deterministically from the pinned upstream definition."
+            ],
+            "lesson_id": "provenance_locked_port",
+            "summary": "Compatibility adaptations remain reproducible source transformations rather than hand-maintained forks."
+          },
+          {
+            "enforcement": [
+              "Use only splunk.table and splunk.singlevalue panel types.",
+              "Declare no required Splunk app and validate on the pinned 9.4.3 target."
+            ],
+            "lesson_id": "builtin_compatibility_fallback",
+            "summary": "Preserve operational questions and SPL when custom rendering is unavailable."
+          },
+          {
+            "enforcement": [
+              "Generate fixture rows from the eight upstream harness.json files.",
+              "Keep original SPL validation separate from disposable render-query substitution."
+            ],
+            "lesson_id": "manifest_driven_render_contracts",
+            "summary": "The portable and custom variants share the same source-owned data contracts."
+          }
+        ],
+        "minimum_target": "9.4.3",
+        "origin": {
+          "attribution": "Splunk Custom Visualizations by Robert Castley, compatibility port adapted under Apache-2.0.",
+          "definition_sha256": "738c77fb0938575037a39552e3c86742167b5abe5272f7a5a814bbedbb80fdf9",
+          "license": "Apache-2.0",
+          "repository": "https://github.com/rcastley/splunk-custom-visualizations",
+          "revision": "7424755c461712022367c3fa081fd7e0edc91001",
+          "source_paths": [
+            "splunk_health/default/data/ui/views/splunk_health.xml",
+            "examples/splunk_status_board/appserver/static/visualizations/splunk_status_board/harness.json",
+            "examples/license_gauge/appserver/static/visualizations/license_gauge/harness.json",
+            "examples/resource_gauge/appserver/static/visualizations/resource_gauge/harness.json",
+            "examples/indexing_pipeline_flow/appserver/static/visualizations/indexing_pipeline_flow/harness.json",
+            "examples/forwarder_heatmap/appserver/static/visualizations/forwarder_heatmap/harness.json",
+            "examples/search_activity/appserver/static/visualizations/search_activity/harness.json",
+            "examples/scheduler_health/appserver/static/visualizations/scheduler_health/harness.json",
+            "examples/index_storage/appserver/static/visualizations/index_storage/harness.json"
+          ]
+        },
+        "required_apps": [],
+        "tags": [
+          "source-derived",
+          "splunk-health",
+          "portable",
+          "splunk-9",
+          "built-in-visualizations"
+        ],
+        "template_id": "rcastley_splunk_health_portable",
+        "title": "Splunk Health (Portable)"
+      }
+    }
+  ]
+}

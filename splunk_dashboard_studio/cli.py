@@ -27,6 +27,11 @@ from splunk_dashboard_studio.schema import (
     dashboard_definition_schema,
     schema_bundle,
 )
+from splunk_dashboard_studio.source_templates import (
+    build_source_template,
+    build_source_template_bundle,
+    source_template_entries,
+)
 from splunk_dashboard_studio.validation import validate_dashboard
 
 
@@ -94,6 +99,21 @@ def _parser() -> argparse.ArgumentParser:
         default="definition",
     )
     catalog_build.add_argument("--output", default="-", help="Output path or '-' for stdout")
+
+    template = subparsers.add_parser(
+        "template", help="Inspect or build provenance-locked source templates"
+    )
+    template_commands = template.add_subparsers(dest="template_command", required=True)
+    template_commands.add_parser("list", help="List source-template provenance and requirements")
+    template_build = template_commands.add_parser("build", help="Build a source-template artifact")
+    template_build.add_argument("template_id")
+    template_build.add_argument("--target", required=True)
+    template_build.add_argument(
+        "--artifact",
+        choices=("definition", "bundle"),
+        default="definition",
+    )
+    template_build.add_argument("--output", default="-", help="Output path or '-' for stdout")
     return parser
 
 
@@ -140,12 +160,28 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 )
                 return 0
-            artifact = (
+            catalog_artifact = (
                 build_catalog_dashboard(arguments.example_id, arguments.target)
                 if arguments.artifact == "definition"
                 else build_catalog_bundle(arguments.example_id, arguments.target)
             )
-            _write_json(artifact, arguments.output)
+            _write_json(catalog_artifact, arguments.output)
+            return 0
+        if arguments.command == "template":
+            if arguments.template_command == "list":
+                _print_json(
+                    {
+                        "schema_version": "dashboard-source-templates/v1",
+                        "entries": source_template_entries(),
+                    }
+                )
+                return 0
+            template_artifact = (
+                build_source_template(arguments.template_id, arguments.target)
+                if arguments.artifact == "definition"
+                else build_source_template_bundle(arguments.template_id, arguments.target)
+            )
+            _write_json(template_artifact, arguments.output)
             return 0
     except (OSError, ValueError, ValidationError, json.JSONDecodeError) as error:
         _print_json({"status": "error", "message": str(error), "error_type": type(error).__name__})

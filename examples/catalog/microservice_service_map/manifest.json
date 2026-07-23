@@ -4,11 +4,11 @@
     "Official NPM validation is performed in CI and is not claimed by this generated file.",
     "Live Splunk REST ingestion and readback remain deferred."
   ],
-  "canonical_json_bytes": 3627,
-  "definition_sha256": "12e819987861eed98efa935036d807292abec6d45c4cdec176f276146baf5bd9",
+  "canonical_json_bytes": 4411,
+  "definition_sha256": "16746e0357c7472622605bdd0392ce5fec23d91b0f5f67abffea74068213bc72",
   "engine_evidence": "temporal_surrogate",
   "example_id": "microservice_service_map",
-  "generator_version": "0.2.0",
+  "generator_version": "0.2.1",
   "minimum_target": "10.4.0",
   "native_validation": "valid",
   "official_engine_id": "dashboard-29.8.0",
@@ -38,7 +38,8 @@
     },
     {
       "data_source_ids": [
-        "ds_dependency_map"
+        "ds_dependency_map",
+        "ds_dependency_map_nodes"
       ],
       "drilldown_signals": [
         "log"

@@ -1,0 +1,239 @@
+name: Splunk visual regression
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/visual-regression.yml"
+      - "examples/catalog/**"
+      - "integration/splunk-visual/**"
+      - "splunk_dashboard_studio/catalog.py"
+      - "splunk_dashboard_studio/codec.py"
+      - "splunk_dashboard_studio/contracts.py"
+      - "splunk_dashboard_studio/generation.py"
+      - "splunk_dashboard_studio/models.py"
+      - "splunk_dashboard_studio/source_templates.py"
+      - "splunk_dashboard_studio/template_data/**"
+      - "splunk_dashboard_studio/validation.py"
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Render scope
+        required: true
+        default: smoke
+        type: choice
+        options: [smoke, full]
+      target:
+        description: Full-suite target selection
+        required: true
+        default: all
+        type: choice
+        options: [all, "9.4.3", "10.0.0", "10.2.0", "10.4.0"]
+      update_snapshots:
+        description: Generate candidate baselines for artifact review
+        required: true
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      suite:
+        required: true
+        type: string
+      target:
+        required: false
+        default: all
+        type: string
+      update_snapshots:
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-${{ github.workflow }}-${{ github.ref }}-${{ inputs.suite || 'scheduled' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  matrix-config:
+    name: Resolve target matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    outputs:
+      matrix: ${{ steps.configuration.outputs.matrix }}
+    steps:
+      - name: Resolve target matrix
+        id: configuration
+        env:
+          REQUESTED_TARGET: ${{ inputs.target || 'all' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${REQUESTED_TARGET}" in
+            all|"")
+              echo 'matrix={"target":["9.4.3","10.0.0","10.2.0","10.4.0"]}' >>"${GITHUB_OUTPUT}"
+              ;;
+            9.4.3|10.0.0|10.2.0|10.4.0)
+              echo "matrix={\"target\":[\"${REQUESTED_TARGET}\"]}" >>"${GITHUB_OUTPUT}"
+              ;;
+            *)
+              echo "Unsupported target: ${REQUESTED_TARGET}" >&2
+              exit 2
+              ;;
+          esac
+
+  visual-smoke:
+    name: Visual smoke (10.4.0)
+    needs: matrix-config
+    if: github.event_name == 'pull_request' || inputs.suite == 'smoke'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+          save-cache: false
+
+      - name: Set up Node 24 for browser QA only
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: integration/splunk-visual/package-lock.json
+
+      - name: Install Python runtime and browser harness
+        run: |
+          uv sync --frozen --no-dev
+          npm ci --prefix integration/splunk-visual --ignore-scripts --no-audit --no-fund
+          npm exec --prefix integration/splunk-visual -- playwright install --with-deps chromium
+
+      - name: Run disposable Splunk render smoke
+        env:
+          SPLUNK_PASSWORD: Visual-QA-${{ github.run_id }}-${{ github.run_attempt }}!
+          SPLUNK_TARGET: "10.4.0"
+          SPLUNK_UPDATE_SNAPSHOTS: ${{ inputs.update_snapshots && '1' || '0' }}
+          SPLUNK_VISUAL_ARTIFACTS: ${{ runner.temp }}/splunk-visual-10.4.0
+          SPLUNK_VISUAL_OUTPUT: ${{ runner.temp }}/splunk-visual-10.4.0
+          SPLUNK_VISUAL_SUITE: smoke
+        run: integration/splunk-visual/run.sh
+
+      - name: Build QA overview after a partial browser failure
+        if: failure()
+        env:
+          SPLUNK_VISUAL_ARTIFACTS: ${{ runner.temp }}/splunk-visual-10.4.0
+          SPLUNK_VISUAL_TARGET: "10.4.0"
+        working-directory: integration/splunk-visual
+        shell: bash
+        run: |
+          if find "${SPLUNK_VISUAL_ARTIFACTS}/screenshots" -name '*.png' -print -quit | grep -q .; then
+            npm run qa:overview
+          fi
+
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: splunk-visual-smoke-10.4.0
+          path: ${{ runner.temp }}/splunk-visual-10.4.0
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload candidate baselines
+        if: inputs.update_snapshots
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-baselines-10.4.0
+          path: integration/splunk-visual/baselines/10.4.0
+          if-no-files-found: error
+          retention-days: 14
+
+  visual-full:
+    name: Visual full (${{ matrix.target }})
+    needs: matrix-config
+    if: github.event_name == 'schedule' || inputs.suite == 'full'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.matrix-config.outputs.matrix) }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.25"
+          enable-cache: true
+          save-cache: false
+
+      - name: Set up Node 24 for browser QA only
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: integration/splunk-visual/package-lock.json
+
+      - name: Install Python runtime and browser harness
+        run: |
+          uv sync --frozen --no-dev
+          npm ci --prefix integration/splunk-visual --ignore-scripts --no-audit --no-fund
+          npm exec --prefix integration/splunk-visual -- playwright install --with-deps chromium
+
+      - name: Run disposable Splunk full render suite
+        env:
+          SPLUNK_PASSWORD: Visual-QA-${{ github.run_id }}-${{ strategy.job-index }}!
+          SPLUNK_TARGET: ${{ matrix.target }}
+          SPLUNK_UPDATE_SNAPSHOTS: ${{ inputs.update_snapshots && '1' || '0' }}
+          SPLUNK_VISUAL_ARTIFACTS: ${{ runner.temp }}/splunk-visual-${{ matrix.target }}
+          SPLUNK_VISUAL_OUTPUT: ${{ runner.temp }}/splunk-visual-${{ matrix.target }}
+          SPLUNK_VISUAL_SUITE: full
+        run: integration/splunk-visual/run.sh
+
+      - name: Build QA overview after a partial browser failure
+        if: failure()
+        env:
+          SPLUNK_VISUAL_ARTIFACTS: ${{ runner.temp }}/splunk-visual-${{ matrix.target }}
+          SPLUNK_VISUAL_TARGET: ${{ matrix.target }}
+        working-directory: integration/splunk-visual
+        shell: bash
+        run: |
+          if find "${SPLUNK_VISUAL_ARTIFACTS}/screenshots" -name '*.png' -print -quit | grep -q .; then
+            npm run qa:overview
+          fi
+
+      - name: Upload target evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: splunk-visual-full-${{ matrix.target }}
+          path: ${{ runner.temp }}/splunk-visual-${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload candidate baselines
+        if: inputs.update_snapshots
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-baselines-${{ matrix.target }}
+          path: integration/splunk-visual/baselines/${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 14

@@ -40,10 +40,19 @@ def test_distribution_guard_rejects_node_assets_in_wheel_and_sdist(tmp_path: Pat
     sdist = tmp_path / "bad.tar.gz"
     with tarfile.open(sdist, "w:gz") as archive:
         data = b""
-        info = tarfile.TarInfo("package/helper.cjs")
-        info.size = len(data)
-        archive.addfile(info, io.BytesIO(data))
-    assert guard.prohibited_members(sdist) == ["package/helper.cjs"]
+        for name in (
+            "package/helper.cjs",
+            "package/integration/splunk-visual/package-lock.json",
+            "package/integration/splunk-visual/tests/render.spec.ts",
+        ):
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+    assert guard.prohibited_members(sdist) == [
+        "package/helper.cjs",
+        "package/integration/splunk-visual/package-lock.json",
+        "package/integration/splunk-visual/tests/render.spec.ts",
+    ]
 
 
 def test_distribution_guard_rejects_unknown_archive_type(tmp_path: Path) -> None:

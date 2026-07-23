@@ -103,6 +103,16 @@ def test_single_value_trellis_is_available_in_enterprise_9_4(
     assert validate_dashboard(payload, target="9.4.3").is_valid
 
 
+def test_app_qualified_custom_visualization_uses_10_2_feature_boundary(
+    dashboard_payload: dict[str, Any],
+) -> None:
+    payload = copy.deepcopy(dashboard_payload)
+    payload["visualizations"]["viz_events"]["type"] = "splunk_health.license_gauge"
+    older = validate_dashboard(payload, target="10.0.0")
+    assert any(issue.feature == "dashboard.visualization.custom" for issue in older.issues)
+    assert validate_dashboard(payload, target="10.2.0").is_valid
+
+
 def test_dos_validation_is_scoped_to_option_surfaces(dashboard_payload: dict[str, Any]) -> None:
     payload = copy.deepcopy(dashboard_payload)
     payload["description"] = "> This is prose, not Dynamic Options Syntax"

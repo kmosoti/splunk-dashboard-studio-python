@@ -1,0 +1,89 @@
+{
+  "schema_version": "splunk-render-fixtures/v1",
+  "fixed_epoch": 1704067200,
+  "suites": {
+    "smoke": [
+      "business_journey_slo",
+      "microservice_service_map"
+    ],
+    "full": [
+      "*"
+    ]
+  },
+  "source_template_suites": {
+    "smoke": {
+      "9.4.3": ["rcastley_splunk_health_portable"],
+      "10.0.0": ["rcastley_splunk_health_portable"],
+      "10.2.0": ["rcastley_splunk_health"],
+      "10.4.0": ["rcastley_splunk_health"]
+    },
+    "full": {
+      "9.4.3": ["rcastley_splunk_health_portable"],
+      "10.0.0": ["rcastley_splunk_health_portable"],
+      "10.2.0": ["rcastley_splunk_health"],
+      "10.4.0": ["rcastley_splunk_health"]
+    }
+  },
+  "visualization_contracts": {
+    "splunk.line": {
+      "query": "| makeresults count=3 | streamstats count AS point | eval _time=1704067200+((point-1)*300) | eval observed=case(point=1,12.5,point=2,31.25,true(),18.75), target=20 | table _time point observed target",
+      "expected_rows": [
+        {"point": "1", "observed": "12.5", "target": "20"},
+        {"point": "2", "observed": "31.25", "target": "20"},
+        {"point": "3", "observed": "18.75", "target": "20"}
+      ],
+      "ui_markers": []
+    },
+    "splunk.networkGraph": {
+      "query": "| makeresults count=3 | streamstats count AS edge | eval source=case(edge=1,\"gateway\",edge=2,\"gateway\",true(),\"checkout\"), target=case(edge=1,\"catalog\",edge=2,\"checkout\",true(),\"payments\"), value=case(edge=1,120,edge=2,95,true(),42) | table source target value",
+      "expected_rows": [
+        {"source": "gateway", "target": "catalog", "value": "120"},
+        {"source": "gateway", "target": "checkout", "value": "95"},
+        {"source": "checkout", "target": "payments", "value": "42"}
+      ],
+      "ui_markers": ["gateway", "catalog", "checkout", "payments"],
+      "auxiliary_data_sources": {
+        "nodeSource": {
+          "expected_rows": [
+            {"nodeIds": "catalog", "nodeTexts": "catalog", "nodeValues": "120"},
+            {"nodeIds": "checkout", "nodeTexts": "checkout", "nodeValues": "137"},
+            {"nodeIds": "gateway", "nodeTexts": "gateway", "nodeValues": "215"},
+            {"nodeIds": "payments", "nodeTexts": "payments", "nodeValues": "42"}
+          ]
+        }
+      }
+    },
+    "splunk.singlevalue": {
+      "query": "| makeresults | eval value=99.95 | table value",
+      "expected_rows": [
+        {"value": "99.95"}
+      ],
+      "ui_markers": ["100"]
+    },
+    "splunk.table": {
+      "query": "| makeresults count=3 | streamstats count AS rank | eval entity=case(rank=1,\"checkout\",rank=2,\"catalog\",true(),\"payments\"), value=case(rank=1,120,rank=2,95,true(),42), status=case(rank=1,\"healthy\",rank=2,\"warning\",true(),\"critical\") | table rank entity value status",
+      "expected_rows": [
+        {"rank": "1", "entity": "checkout", "value": "120", "status": "healthy"},
+        {"rank": "2", "entity": "catalog", "value": "95", "status": "warning"},
+        {"rank": "3", "entity": "payments", "value": "42", "status": "critical"}
+      ],
+      "ui_markers": ["checkout", "catalog", "payments"]
+    }
+  },
+  "state_cases": {
+    "no_data": {
+      "title": "Expected no-data state",
+      "visualization_type": "splunk.table",
+      "query": "| makeresults | where 1=0",
+      "expected_rows": [],
+      "ui_patterns": ["no search results returned", "no results", "no data"]
+    },
+    "search_error": {
+      "title": "Expected search-error state",
+      "visualization_type": "splunk.table",
+      "query": "| makeresults | visual_qa_command_does_not_exist",
+      "expected_rows": [],
+      "ui_patterns": ["error", "failed"]
+    }
+  }
+}

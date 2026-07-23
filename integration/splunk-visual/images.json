@@ -1,0 +1,22 @@
+{
+  "schema_version": "splunk-visual-images/v1",
+  "architecture": "linux/amd64",
+  "targets": {
+    "9.4.3": {
+      "image": "splunk/splunk:9.4.3@sha256:27344f73cbe07c3ea003164dbabef38e08e56efb193b39095cf56f8784a42dbe",
+      "requires_general_terms": false
+    },
+    "10.0.0": {
+      "image": "splunk/splunk:10.0.0@sha256:10da23a5c78397b38328ed863ca2826390c329c517f9aff7a4978f30e5208e78",
+      "requires_general_terms": true
+    },
+    "10.2.0": {
+      "image": "splunk/splunk:10.2.0@sha256:a7a7d800cdf470eeedf5a8eb2a4ea1bb07ade9bef5c95f1c65eabab08e7ac391",
+      "requires_general_terms": true
+    },
+    "10.4.0": {
+      "image": "splunk/splunk:10.4.0@sha256:5fef7b0d2c83f6e8b3fe3cda5885e2a01e3a6eb99d8502e6333aaa64e7021f62",
+      "requires_general_terms": true
+    }
+  }
+}

@@ -9,7 +9,12 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from splunk_dashboard_studio import __version__
+from splunk_dashboard_studio import (
+    __version__,
+    build_source_template,
+    canonical_json,
+    source_template_entries,
+)
 from splunk_dashboard_studio.catalog import build_catalog_bundle, catalog_entries
 from splunk_dashboard_studio.profiles import profile_manifest
 
@@ -82,6 +87,22 @@ def build_release_evidence(tag: str, distribution_directory: Path) -> dict[str, 
                 "definition_sha256": bundle.manifest.definition_sha256,
             }
         )
+    source_templates = []
+    for entry in source_template_entries():
+        definition = build_source_template(entry.template_id, str(entry.minimum_target))
+        normalized = canonical_json(definition).encode("utf-8")
+        source_templates.append(
+            {
+                "template_id": entry.template_id,
+                "minimum_target": str(entry.minimum_target),
+                "repository": entry.origin.repository,
+                "revision": entry.origin.revision,
+                "license": entry.origin.license,
+                "source_definition_sha256": entry.origin.definition_sha256,
+                "normalized_definition_sha256": hashlib.sha256(normalized).hexdigest(),
+                "required_apps": [app.app_id for app in entry.required_apps],
+            }
+        )
     return {
         "schema_version": "release-evidence/v1",
         "package": {
@@ -92,6 +113,7 @@ def build_release_evidence(tag: str, distribution_directory: Path) -> dict[str, 
         },
         "artifacts": [_artifact(path) for path in artifacts],
         "catalog": catalog,
+        "source_templates": source_templates,
         "compatibility": profile_manifest(),
         "verification": {
             "native": [
@@ -104,7 +126,11 @@ def build_release_evidence(tag: str, distribution_directory: Path) -> dict[str, 
                 "distribution inspection",
             ],
             "official_engines": "validated by the release workflow matrix",
-            "live_splunk_roundtrip": "deferred",
+            "live_splunk_roundtrip": (
+                "validated by the release visual matrix, including pinned source templates"
+            ),
+            "browser_rendering": "validated by target-specific Playwright baselines",
+            "vision_qa": "advisory artifact; deterministic corroboration is required to gate",
         },
     }
 

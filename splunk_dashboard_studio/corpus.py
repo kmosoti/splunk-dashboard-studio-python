@@ -11,6 +11,10 @@ from pydantic import BaseModel, ConfigDict, JsonValue
 
 from splunk_dashboard_studio.catalog import build_catalog_dashboard, catalog_entries
 from splunk_dashboard_studio.generation import DashboardBuilder
+from splunk_dashboard_studio.source_templates import (
+    build_source_template,
+    source_template_entries,
+)
 from splunk_dashboard_studio.version import TargetPlatform
 
 
@@ -75,6 +79,23 @@ def generate_corpus(target: TargetPlatform | str) -> tuple[CorpusCase, ...]:
                 definition=build_catalog_dashboard(
                     entry.example_id,
                     platform,
+                ).as_json_value(),
+            )
+        )
+
+    for source_entry in source_template_entries():
+        if platform.version < source_entry.minimum_target:
+            continue
+        cases.append(
+            CorpusCase(
+                case_id=f"source-template-{source_entry.template_id}",
+                target=platform,
+                expected_native="valid",
+                expected_npm="skip" if source_entry.required_apps else "valid",
+                tags=("positive", "source-template", *source_entry.tags),
+                definition=build_source_template(
+                    source_entry.template_id,
+                    str(platform.version),
                 ).as_json_value(),
             )
         )

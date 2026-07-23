@@ -8,7 +8,7 @@
   "definition_sha256": "6f0b095156c743a830fc08dee8c8ac55fc9187b2f1086b04b19f589d75b30e5e",
   "engine_evidence": "temporal_surrogate",
   "example_id": "ec2_host_capacity",
-  "generator_version": "0.2.0",
+  "generator_version": "0.2.1",
   "minimum_target": "9.4.3",
   "native_validation": "valid",
   "official_engine_id": "dashboard-27.5.1",

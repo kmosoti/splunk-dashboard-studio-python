@@ -1,0 +1,35 @@
+{
+  "schema_version": "splunk-vision-qa-contract/v1",
+  "mode": "advisory",
+  "categories": [
+    "blank",
+    "loading",
+    "search_error",
+    "overlap",
+    "clipping",
+    "contrast",
+    "wrong_chart",
+    "malformed_graph",
+    "whitespace",
+    "alignment"
+  ],
+  "finding": {
+    "required": [
+      "dashboard_id",
+      "category",
+      "severity",
+      "confidence",
+      "summary",
+      "bounding_box",
+      "deterministic_evidence"
+    ],
+    "severity": ["info", "warning", "error"],
+    "confidence_range": [0, 1],
+    "bounding_box": ["x", "y", "width", "height"]
+  },
+  "gating": {
+    "vision_only": "warning",
+    "deterministically_corroborated_error": "failure",
+    "evidence_source": "qa-overview.json#/deterministic_failures"
+  }
+}

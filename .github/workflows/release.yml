@@ -9,6 +9,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  visual-regression:
+    name: Release visual regression
+    uses: ./.github/workflows/visual-regression.yml
+    with:
+      suite: full
+      target: all
+      update_snapshots: false
+
   official-engine:
     name: Release validator ${{ matrix.engine }}
     runs-on: ubuntu-latest
@@ -78,7 +86,7 @@ jobs:
 
   build:
     name: Build and attest once
-    needs: official-engine
+    needs: [official-engine, visual-regression]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:

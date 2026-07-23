@@ -1,0 +1,4 @@
+services:
+  splunk:
+    volumes:
+      - ${SPLUNK_HEALTH_APP_PATH:?Prepare the pinned source-template app first}:/opt/splunk/etc/apps/splunk_health
